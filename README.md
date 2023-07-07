@@ -25,4 +25,4 @@ Todo:
 - [ ] Global Hotkey for keyboard users only with Command Palette like UI to invoke them
 - [ ] TTS (Text To Speech)
 - [ ] Native (non WebView2) client for OpenAI, LLaMA, unofficial APIs too.
-- [ ] IAutomation to interact with the OS Applications.
+- [ ] UIAutomation to interact with the OS Applications.
