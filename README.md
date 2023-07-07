@@ -13,6 +13,10 @@ Features:
 - [x] Bard
 - [x] You
 
+
+https://github.com/vhanla/AIChatSidebar/assets/1015823/ff03e1a0-9870-4bbe-aaff-34d9c1df717b
+
+
 Todo:
 - [ ] Multimonitor support
 - [ ] Custom style sheets support
