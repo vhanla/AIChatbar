@@ -19,13 +19,16 @@ type
     procedure WVBrowser1AfterCreated(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure WVBrowser1WindowCloseRequested(Sender: TObject);
+    procedure WVBrowser1NewWindowRequested(Sender: TObject;
+      const aWebView: ICoreWebView2;
+      const aArgs: ICoreWebView2NewWindowRequestedEventArgs);
 
   private
     FArgs     : TCoreWebView2NewWindowRequestedEventArgs;
     FDeferral : TCoreWebView2Deferral;
 
   public
-    constructor Create(AOwner: TComponent; const aArgs : TCoreWebView2NewWindowRequestedEventArgs); reintroduce;
+    constructor Create(AOwner: TComponent; const aArgs : ICoreWebView2NewWindowRequestedEventArgs); reintroduce;
   end;
 
 var
@@ -38,11 +41,11 @@ implementation
 uses
   uWVCoreWebView2WindowFeatures;
 
-constructor TChildForm.Create(AOwner: TComponent; const aArgs : TCoreWebView2NewWindowRequestedEventArgs);
+constructor TChildForm.Create(AOwner: TComponent; const aArgs : ICoreWebView2NewWindowRequestedEventArgs);
 begin
   inherited Create(AOwner);
 
-  FArgs     := aArgs;
+  FArgs     := TCoreWebView2NewWindowRequestedEventArgs.Create(aArgs);
   FDeferral := TCoreWebView2Deferral.Create(FArgs.Deferral);
 end;
 
@@ -104,6 +107,16 @@ begin
     end;
 
   WVWindowParent1.UpdateSize;
+end;
+
+procedure TChildForm.WVBrowser1NewWindowRequested(Sender: TObject;
+  const aWebView: ICoreWebView2;
+  const aArgs: ICoreWebView2NewWindowRequestedEventArgs);
+var
+  TempChildForm : TChildForm;
+begin
+  TempChildForm := TChildForm.Create(Self, aArgs);
+  TempChildForm.Show;
 end;
 
 procedure TChildForm.WVBrowser1WindowCloseRequested(Sender: TObject);

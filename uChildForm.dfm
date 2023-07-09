@@ -30,6 +30,7 @@ object ChildForm: TChildForm
     TargetCompatibleBrowserVersion = '95.0.1020.44'
     AllowSingleSignOnUsingOSPrimaryAccount = False
     OnAfterCreated = WVBrowser1AfterCreated
+    OnNewWindowRequested = WVBrowser1NewWindowRequested
     OnWindowCloseRequested = WVBrowser1WindowCloseRequested
     Left = 144
     Top = 168
