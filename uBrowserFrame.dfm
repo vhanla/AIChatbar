@@ -8561,6 +8561,8 @@ object BrowserFrame: TBrowserFrame
     OnNavigationCompleted = WVBrowser1NavigationCompleted
     OnSourceChanged = WVBrowser1SourceChanged
     OnDocumentTitleChanged = WVBrowser1DocumentTitleChanged
+    OnNewWindowRequested = WVBrowser1NewWindowRequested
+    OnWebMessageReceived = WVBrowser1WebMessageReceived
     OnDOMContentLoaded = WVBrowser1DOMContentLoaded
     Left = 104
     Top = 232

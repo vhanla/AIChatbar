@@ -34,6 +34,9 @@ type
     procedure WVBrowser1DOMContentLoaded(Sender: TObject;
       const aWebView: ICoreWebView2;
       const aArgs: ICoreWebView2DOMContentLoadedEventArgs);
+    procedure WVBrowser1WebMessageReceived(Sender: TObject;
+      const aWebView: ICoreWebView2;
+      const aArgs: ICoreWebView2WebMessageReceivedEventArgs);
   private
     { Private declarations }
   protected
@@ -65,7 +68,7 @@ implementation
 {$R *.dfm}
 
 uses
-  uWVCoreWebView2WindowFeatures, frmChatWebView;
+  uWVCoreWebView2WindowFeatures, frmChatWebView, menu;
 
 constructor TBrowserFrame.Create(AOwner: TComponent);
 begin
@@ -177,25 +180,9 @@ procedure TBrowserFrame.WVBrowser1NewWindowRequested(Sender: TObject;
   const aArgs: ICoreWebView2NewWindowRequestedEventArgs);
 var
   TempChildForm : TChildForm;
-  TempArgs : TCoreWebView2NewWindowRequestedEventArgs;
-  TempWindowFeatures : TCoreWebView2WindowFeatures;
 begin
-  if assigned(aArgs) then
-    begin
-      TempArgs           := TCoreWebView2NewWindowRequestedEventArgs.Create(aArgs);
-      TempWindowFeatures := TCoreWebView2WindowFeatures.Create(TempArgs.WindowFeatures);
-
-      if TempWindowFeatures.HasSize or TempWindowFeatures.HasPosition then
-        begin
-          TempChildForm := TChildForm.Create(self, TempArgs);
-          TempChildForm.Show;
-        end
-       else
-        TmainBrowser(Application.MainForm).CreateNewCard(TempArgs);
-
-
-      FreeAndNil(TempWindowFeatures);
-    end;
+  TempChildForm := TChildForm.Create(Self, aArgs);
+  TempChildForm.Show;
 end;
 
 procedure TBrowserFrame.WVBrowser1SourceChanged(Sender: TObject;
@@ -203,6 +190,13 @@ procedure TBrowserFrame.WVBrowser1SourceChanged(Sender: TObject;
   const aArgs: ICoreWebView2SourceChangedEventArgs);
 begin
 //  URLCbx.Text := WVBrowser1.Source;
+end;
+
+procedure TBrowserFrame.WVBrowser1WebMessageReceived(Sender: TObject;
+  const aWebView: ICoreWebView2;
+  const aArgs: ICoreWebView2WebMessageReceivedEventArgs);
+begin
+  WVBrowser1.ExecuteScript('document.currentScript.setAttribute(''sanbox'', ''allow-forms'')');
 end;
 
 end.
