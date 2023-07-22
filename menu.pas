@@ -60,11 +60,14 @@ type
     procedure imgClaudeContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure FormClick(Sender: TObject);
+    procedure pm1Popup(Sender: TObject);
+    procedure pm1Close(Sender: TObject);
 //    procedure FormPaint(Sender: TObject);
   private
     { Private declarations }
     FOnMenuArea: Boolean;
     FCurrentPopupCardId: Integer;
+    FPopupMenuVisible: Boolean;
     {$IFDEF EXPERIMENTAL}
       {$I experimental.object.inc}
     {$IFEND}
@@ -335,7 +338,7 @@ var
 begin
   if DetectFullScreen3D then Exit;
   if DetectFullScreenApp(GetForegroundWindow) then Exit;
-  if IsWindowVisible(pm1.WindowHandle) then Exit;
+  if FPopupMenuVisible then Exit;
 
   try
     pos := Mouse.CursorPos;
@@ -598,6 +601,16 @@ procedure TfrmMenu.imgShareContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 begin
   FCurrentPopupCardId := mainBrowser.BingID;
+end;
+
+procedure TfrmMenu.pm1Close(Sender: TObject);
+begin
+  FPopupMenuVisible := False;
+end;
+
+procedure TfrmMenu.pm1Popup(Sender: TObject);
+begin
+  FPopupMenuVisible := True;
 end;
 
 procedure TfrmMenu.pmCardCloseClick(Sender: TObject);

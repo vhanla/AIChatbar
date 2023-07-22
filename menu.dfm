@@ -2292,6 +2292,8 @@ object frmMenu: TfrmMenu
     Top = 72
   end
   object pm1: TPopupMenu
+    OnClose = pm1Close
+    OnPopup = pm1Popup
     Left = 248
     Top = 24
     object About1: TMenuItem
