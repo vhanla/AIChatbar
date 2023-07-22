@@ -1,9 +1,10 @@
 object frmMenu: TfrmMenu
   Left = 258
   Top = 171
+  BorderStyle = bsNone
   Caption = 'frmMenu'
-  ClientHeight = 446
-  ClientWidth = 740
+  ClientHeight = 597
+  ClientWidth = 762
   Color = clSilver
   DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
@@ -13,17 +14,20 @@ object frmMenu: TfrmMenu
   Font.Style = []
   PopupMenu = pm1
   StyleElements = [seFont]
+  OnClick = FormClick
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  OnPaint = FormPaint
   OnShow = FormShow
   TextHeight = 13
   object imgShare: TSkSvg
+    Tag = 2
     Left = 16
     Top = 126
     Width = 48
     Height = 48
+    PopupMenu = pmCard
     OnClick = imgShareClick
+    OnContextPopup = imgShareContextPopup
     Svg.Source = 
       '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'#13#10'<!-- Cre' +
       'ated with Inkscape (http://www.inkscape.org/) -->'#13#10#13#10'<svg'#13#10'   wi' +
@@ -459,11 +463,14 @@ object frmMenu: TfrmMenu
       'svg>'
   end
   object imgConnect: TSkSvg
+    Tag = 3
     Left = 16
     Top = 240
     Width = 48
     Height = 48
+    PopupMenu = pmCard
     OnClick = imgConnectClick
+    OnContextPopup = imgConnectContextPopup
     Svg.Source = 
       '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'#13#10'<!-- Cre' +
       'ated with Inkscape (http://www.inkscape.org/) -->'#13#10#13#10'<svg'#13#10'   wi' +
@@ -781,12 +788,15 @@ object frmMenu: TfrmMenu
       '.13073,-0.0704 0.05613,-0.0324 0.124746,-0.0739 0.206098,-0.1243' +
       '9 z" /></g></svg>'
   end
-  object imgSearch: TSkSvg
+  object imgChatGPT: TSkSvg
+    Tag = 1
     Left = 16
     Top = 72
     Width = 48
     Height = 48
-    OnClick = imgSearchClick
+    PopupMenu = pmCard
+    OnClick = imgChatGPTClick
+    OnContextPopup = imgChatGPTContextPopup
     Svg.Source = 
       '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'#13#10'<!-- Cre' +
       'ated with Inkscape (http://www.inkscape.org/) -->'#13#10#13#10'<svg'#13#10'   wi' +
@@ -1029,11 +1039,14 @@ object frmMenu: TfrmMenu
       '></g></g></svg>'
   end
   object imgSettings: TSkSvg
+    Tag = 4
     Left = 16
     Top = 304
     Width = 48
     Height = 48
+    PopupMenu = pmCard
     OnClick = imgSettingsClick
+    OnContextPopup = imgSettingsContextPopup
     Svg.Source = 
       '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'#13#10'<!-- Cre' +
       'ated with Inkscape (http://www.inkscape.org/) -->'#13#10#13#10'<svg'#13#10'   wi' +
@@ -2194,18 +2207,100 @@ object frmMenu: TfrmMenu
       ',0.04512 -0.0326,0.07183 0.01,-0.02653 0.0207,-0.05024 0.0326,-0' +
       '.07183 z" /></g></g></svg>'
   end
+  object imgClaude: TSkSvg
+    Left = 16
+    Top = 384
+    Width = 48
+    Height = 48
+    OnClick = imgClaudeClick
+    OnContextPopup = imgClaudeContextPopup
+    Svg.Source = 
+      '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'#13#10'<!-- Cre' +
+      'ated with Inkscape (http://www.inkscape.org/) -->'#13#10#13#10'<svg'#13#10'   wi' +
+      'dth="512"'#13#10'   height="512"'#13#10'   viewBox="0 0 135.46666 135.46667"' +
+      #13#10'   version="1.1"'#13#10'   id="svg5"'#13#10'   xml:space="preserve"'#13#10'   so' +
+      'dipodi:docname="claudeLogo.svg"'#13#10'   inkscape:version="1.2.2 (732' +
+      'a01da63, 2022-12-09)"'#13#10'   xmlns:inkscape="http://www.inkscape.or' +
+      'g/namespaces/inkscape"'#13#10'   xmlns:sodipodi="http://sodipodi.sourc' +
+      'eforge.net/DTD/sodipodi-0.dtd"'#13#10'   xmlns="http://www.w3.org/2000' +
+      '/svg"'#13#10'   xmlns:svg="http://www.w3.org/2000/svg"><sodipodi:named' +
+      'view'#13#10'     id="namedview7"'#13#10'     pagecolor="#ffffff"'#13#10'     borde' +
+      'rcolor="#000000"'#13#10'     borderopacity="0.25"'#13#10'     inkscape:showp' +
+      'ageshadow="2"'#13#10'     inkscape:pageopacity="0.0"'#13#10'     inkscape:pa' +
+      'gecheckerboard="0"'#13#10'     inkscape:deskcolor="#d1d1d1"'#13#10'     inks' +
+      'cape:document-units="mm"'#13#10'     showgrid="false"'#13#10'     inkscape:z' +
+      'oom="1.2938725"'#13#10'     inkscape:cx="117.86324"'#13#10'     inkscape:cy=' +
+      '"240.75015"'#13#10'     inkscape:window-width="2560"'#13#10'     inkscape:wi' +
+      'ndow-height="1351"'#13#10'     inkscape:window-x="-9"'#13#10'     inkscape:w' +
+      'indow-y="-9"'#13#10'     inkscape:window-maximized="1"'#13#10'     inkscape:' +
+      'current-layer="layer1" /><defs'#13#10'     id="defs2" /><g'#13#10'     inksc' +
+      'ape:label="Layer 1"'#13#10'     inkscape:groupmode="layer"'#13#10'     id="l' +
+      'ayer1"><g'#13#10'       id="g803"'#13#10'       transform="matrix(1.5550499,' +
+      '0,0,1.5550499,-8.9025954,-18.124338)"><path'#13#10'         fill="#fff' +
+      'fff"'#13#10'         d="M 78.57107,55.212163 A 29.289104,29.289104 0 0' +
+      ' 1 49.28197,84.501272 29.289104,29.289104 0 0 1 19.992878,55.212' +
+      '163 29.289104,29.289104 0 0 1 49.28197,25.923058 29.289104,29.28' +
+      '9104 0 0 1 78.57107,55.212163 Z m -45.103545,7.372249 q -1.36393' +
+      '9,1.44623 -1.128765,3.48036 -0.35285,0.39978 -0.435063,0.95239 -' +
+      '0.08221,0.50559 0.423509,0.50559 l 4.279886,0.0236 q 0.599668,0.' +
+      '0115 0.975893,-0.45856 0.729032,-0.90537 0.517366,-2.29281 -0.09' +
+      '421,-0.54086 0.199978,-1.02294 1.305146,-2.08116 4.573854,-0.987' +
+      '67 l 7.489846,0.0588 q 0.646684,6.54919 6.655004,4.72671 0.65841' +
+      '6,-0.19989 0.387957,-0.82306 l -1.058195,-2.4457 q -0.329297,-2.' +
+      '68082 -1.763718,-4.99714 L 47.777246,42.666409 q -0.29419,-0.705' +
+      '478 -1.05824,-0.705478 h -4.44449 q -0.68197,0 -0.893636,0.64668' +
+      '9 -3.409804,10.241189 -7.913088,19.976792 z M 54.678889,47.25201' +
+      '8 q 0.07066,3.703758 2.25753,6.760832 l 4.797252,11.170072 0.199' +
+      '978,1.64611 q 0.05866,0.57615 0.6114,0.71724 1.940098,0.52911 3.' +
+      '844867,-0.0588 0.564383,0.19989 1.022955,-0.0351 0.564379,-0.282' +
+      '19 0.317299,-0.88185 L 61.933472,52.543269 q 0.305744,-1.787213 ' +
+      '-1.081704,-2.939496 L 57.935776,42.596026 Q 57.677138,41.961095 ' +
+      '56.983392,41.961095 H 53.17381 q -0.917144,0 -0.529098,0.834816 ' +
+      'z"'#13#10'         id="path176"'#13#10'         style="stroke-width:1.1758" ' +
+      '/><g'#13#10'         id="g760"'#13#10'         transform="matrix(4.4439573,0' +
+      ',0,4.4439573,-213.88072,-348.45783)"><path'#13#10'           fill="#18' +
+      '1918"'#13#10'           d="m 61.028242,93.448832 c 0.04057,0.09349 0.0' +
+      '1146,0.155223 -0.08731,0.185209 -0.521229,0 -0.695715,0.0036 -1.' +
+      '190808,0.0036 -0.147059,0 -0.218488,-0.613446 -0.464848,-1.07402' +
+      ' -0.825647,0.0063 -1.85866,-0.007 -2.339617,0.01252 -0.152186,0.' +
+      '327474 -0.249466,0.631585 -0.37829,0.949463 -0.05645,0.07055 -0.' +
+      '129648,0.104951 -0.219605,0.103187 l -0.963083,-0.0053 c -0.0758' +
+      '5,0 -0.107597,-0.03792 -0.09525,-0.11377 0.0198,-0.288948 0.2716' +
+      '91,-0.791947 0.3519,-0.99748 0.675569,-1.4605 1.269118,-2.958923' +
+      ' 1.780646,-4.49527 0.03175,-0.09701 0.09877,-0.145521 0.201083,-' +
+      '0.145521 h 1.000125 c 0.114653,0 0.194028,0.05292 0.238125,0.158' +
+      '75 0.789575,1.708169 1.537222,3.957904 2.166932,5.418632 z m -2.' +
+      '809875,-3.831166 c -0.03154,-0.07435 -0.137485,-0.0727 -0.166688' +
+      ',0.0026 L 57.4352,91.23687 c -0.02272,0.06011 0.02309,0.123967 0' +
+      '.08731,0.121708 l 1.27,-0.06085 c 0.0625,-0.0026 0.10335,-0.0665' +
+      '8 0.07938,-0.124354 z"'#13#10'           id="path178-2"'#13#10'           st' +
+      'yle="stroke-width:0.264583"'#13#10'           sodipodi:nodetypes="cccc' +
+      'cccccccssccccccccc" /><path'#13#10'           fill="#181918"'#13#10'        ' +
+      '   d="m 63.351283,93.409145 c 0.03704,0.08996 0.01323,0.156104 -' +
+      '0.07144,0.198437 -0.406997,0.05227 -0.786947,0.105874 -1.156524,' +
+      '-0.02498 -0.768022,-1.862597 -1.485062,-4.007964 -2.166643,-5.52' +
+      '3368 -0.05821,-0.125236 -0.01852,-0.187854 0.119063,-0.187854 h ' +
+      '0.85725 c 0.104069,0 0.175507,0.04762 0.214312,0.142875 0.719446' +
+      ',1.830574 1.536722,3.792982 2.203982,5.39489 z"'#13#10'           id="' +
+      'path180-9"'#13#10'           style="stroke-width:0.264583"'#13#10'          ' +
+      ' sodipodi:nodetypes="ccccsscc" /></g></g></g></svg>'
+  end
   object tmrMenu: TTimer
     Interval = 250
     OnTimer = tmrMenuTimer
-    Left = 400
-    Top = 152
+    Left = 568
+    Top = 72
   end
   object pm1: TPopupMenu
-    Left = 376
-    Top = 32
+    Left = 248
+    Top = 24
     object About1: TMenuItem
       Caption = 'About...'
       OnClick = About1Click
+    end
+    object Settings1: TMenuItem
+      Caption = '&Settings'
+      OnClick = Settings1Click
     end
     object N2: TMenuItem
       Caption = '-'
@@ -2219,18 +2314,34 @@ object frmMenu: TfrmMenu
     Enabled = False
     Interval = 25
     OnTimer = tmrHideMenuTimer
-    Left = 400
-    Top = 264
+    Left = 568
+    Top = 184
   end
   object tmrShowMenu: TTimer
     Enabled = False
     Interval = 25
     OnTimer = tmrShowMenuTimer
-    Left = 400
-    Top = 312
+    Left = 568
+    Top = 232
   end
   object ImageList1: TImageList
     Left = 304
     Top = 400
+  end
+  object pmCard: TPopupMenu
+    OnPopup = pmCardPopup
+    Left = 256
+    Top = 112
+    object pmCardClose: TMenuItem
+      Caption = 'Close'
+      Enabled = False
+      OnClick = pmCardCloseClick
+    end
+  end
+  object TrayIcon1: TTrayIcon
+    PopupMenu = pm1
+    Visible = True
+    Left = 368
+    Top = 288
   end
 end

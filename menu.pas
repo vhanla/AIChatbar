@@ -2,12 +2,15 @@ unit menu;
 
 interface
 
+{$I ProjectDefines.inc}
+
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, jpeg, ExtCtrls, Menus, StdCtrls, registry, scStyledForm,
+  Dialogs, jpeg, ExtCtrls, Menus, StdCtrls, registry,
   frmChatWebView, System.ImageList, Vcl.ImgList,
-  AnyiQuack, AQPSystemTypesAnimations,
-  Vcl.Imaging.pngimage, Skia, Skia.Vcl, Generics.Collections;
+  AnyiQuack, AQPSystemTypesAnimations, uWVCoreWebView2Args,
+  Vcl.Imaging.pngimage, Skia, Skia.Vcl, Generics.Collections,
+  settingsHelper {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
 
 type
   TfrmMenu = class(TForm)
@@ -22,14 +25,19 @@ type
     imgShare: TSkSvg;
     imgMenu: TSkSvg;
     imgConnect: TSkSvg;
-    imgSearch: TSkSvg;
+    imgChatGPT: TSkSvg;
     imgSettings: TSkSvg;
+    pmCard: TPopupMenu;
+    pmCardClose: TMenuItem;
+    Settings1: TMenuItem;
+    imgClaude: TSkSvg;
+    TrayIcon1: TTrayIcon;
     procedure FormCreate(Sender: TObject);
     procedure tmrMenuTimer(Sender: TObject);
     procedure imgMenuClick(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
     procedure About1Click(Sender: TObject);
-    procedure imgSearchClick(Sender: TObject);
+    procedure imgChatGPTClick(Sender: TObject);
     procedure tmrHideMenuTimer(Sender: TObject);
     procedure tmrShowMenuTimer(Sender: TObject);
     procedure imgConnectClick(Sender: TObject);
@@ -37,10 +45,29 @@ type
     procedure imgSettingsClick(Sender: TObject);
     procedure imgShareClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure FormPaint(Sender: TObject);
+    procedure pmCardPopup(Sender: TObject);
+    procedure pmCardCloseClick(Sender: TObject);
+    procedure imgChatGPTContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
+    procedure imgShareContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
+    procedure imgConnectContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
+    procedure imgSettingsContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
+    procedure Settings1Click(Sender: TObject);
+    procedure imgClaudeClick(Sender: TObject);
+    procedure imgClaudeContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
+    procedure FormClick(Sender: TObject);
+//    procedure FormPaint(Sender: TObject);
   private
     { Private declarations }
     FOnMenuArea: Boolean;
+    FCurrentPopupCardId: Integer;
+    {$IFDEF EXPERIMENTAL}
+      {$I experimental.object.inc}
+    {$IFEND}
     procedure CreateParams(var Params: TCreateParams); override;
     procedure HideMenu(Sender: TObject);
     procedure RestoreRequest(var message: TMessage); message WM_USER + $1000;
@@ -48,8 +75,10 @@ type
     procedure WMDisplayChange(var message: TMessage); message WM_DISPLAYCHANGE;
   public
     { Public declarations }
+    Settings: TSettings;
     procedure buttonClick(btnID: Cardinal);
     procedure ShowMenuAnimation;
+    procedure CreateNewCard(const aArgs : TCoreWebView2NewWindowRequestedEventArgs);
     property OnMenuArea: Boolean read FOnMenuArea write FOnMenuArea;
   end;
 
@@ -67,10 +96,10 @@ implementation
 
 uses
   functions,
-  CursorFix,
   Splash,
   settings,
   utils,
+  uBrowserCard,
   GDIPAPI, gdipobj, gdiputil;
 
 
@@ -78,6 +107,11 @@ procedure TfrmMenu.RestoreRequest(var message: TMessage);
 begin
   // mostramos si está oculto
   frmMenu.Show;
+end;
+
+procedure TfrmMenu.Settings1Click(Sender: TObject);
+begin
+  frmSetting.Show;
 end;
 
 procedure TfrmMenu.ShowMenuAnimation;
@@ -136,9 +170,10 @@ begin
   Height := Screen.Height;
   imgMenu.Top := Height div 2 - 24;
   imgShare.Top := imgMenu.Top - 64;
-  imgSearch.Top := imgMenu.Top - 64 * 2;
+  imgChatGPT.Top := imgMenu.Top - 64 * 2;
   imgConnect.Top := imgMenu.Top + 64;
   imgSettings.Top := imgMenu.Top + 64 * 2;
+  imgClaude.Top := imgMenu.Top + 64 * 3;
   inherited;
 end;
 
@@ -167,6 +202,13 @@ begin
   end;
 end;
 
+procedure TfrmMenu.CreateNewCard(
+  const aArgs: TCoreWebView2NewWindowRequestedEventArgs);
+begin
+  if Assigned(mainBrowser) then
+    mainBrowser.CreateNewCard(aArgs);
+end;
+
 procedure TfrmMenu.CreateParams(var Params: TCreateParams);
 begin
   inherited CreateParams(Params);
@@ -188,6 +230,12 @@ Begin
     Result := 'Unknown';
 
 End;
+
+procedure TfrmMenu.FormClick(Sender: TObject);
+begin
+  if frmChatWebView.mainBrowser.Visible then
+    SetForegroundWindow(mainBrowser.Handle);
+end;
 
 procedure TfrmMenu.FormCreate(Sender: TObject);
 const
@@ -217,9 +265,9 @@ begin
   imgShare.Top := imgMenu.Top - 64;
   imgShare.Cursor := crHandPoint;
 
-  imgSearch.Left := 60;
-  imgSearch.Top := imgMenu.Top - 64 * 2;
-  imgSearch.Cursor := crHandPoint;
+  imgChatGPT.Left := 60;
+  imgChatGPT.Top := imgMenu.Top - 64 * 2;
+  imgChatGPT.Cursor := crHandPoint;
 
   imgConnect.Left := 50;
   imgConnect.Top := imgMenu.Top + 64;
@@ -228,6 +276,16 @@ begin
   imgSettings.Left := 60;
   imgSettings.Top := imgMenu.Top + 64 * 2;
   imgSettings.Cursor := crHandPoint;
+
+  imgClaude.Left := 60;
+  imgClaude.Top := imgMenu.Top + 64 * 3;
+  imgClaude.Cursor := crHandPoint;
+
+  {$IFDEF EXPERIMENTAL}
+    {$I experimental.create.menubar.inc}
+  {$ELSE}
+    EnableBlur(Handle, True);
+  {$IFEND}
 
   SetWindowLong(frmMenu.Handle, GWL_EXSTYLE, GetWindowLong(frmMenu.Handle,
     GWL_EXSTYLE) Or WS_EX_LAYERED or WS_EX_TOOLWINDOW);
@@ -242,29 +300,33 @@ begin
   ReservedScreenArea := Rect(10, 0, Screen.Width - 10, Screen.Height);
   // SystemParametersInfo(SPI_SETWORKAREA,0,@ReservedScreenArea,0);
 
-  EnableBlur(Handle, True);
+  Settings := TSettings.Create(ExtractFilePath(ParamStr(0))+'settings.db');
 end;
 
 procedure TfrmMenu.FormDestroy(Sender: TObject);
 begin
+  {$IFDEF EXPERIMENTAL}
+    {$I experimental.destroy.inc}
+  {$IFEND}
+  Settings.Free;
   // restore reserved screenarea
   SystemParametersInfo(SPI_SETWORKAREA, 0, @OriginalWorkArea, 0);
 end;
 
-procedure TfrmMenu.FormPaint(Sender: TObject);
-begin
-  if TaskbarAccented then
-  begin
-    Canvas.Brush.Handle := CreateSolidBrushWithAlpha(BlendColors(GetAccentColor, clBlack,50), 200);
-  end
-  else
-  begin
-    if SystemUsesLightTheme then
-      Canvas.Brush.Handle := CreateSolidBrushWithAlpha($dddddd, 200)    else
-      Canvas.Brush.Handle := CreateSolidBrushWithAlpha($222222, 200);
-  end;
-  Canvas.FillRect(Rect(0,0,Width,Height));
-end;
+//procedure TfrmMenu.FormPaint(Sender: TObject);
+//begin
+//  if TaskbarAccented then
+//  begin
+//    Canvas.Brush.Handle := CreateSolidBrushWithAlpha(BlendColors(GetAccentColor, clBlack,50), 200);
+//  end
+//  else
+//  begin
+//    if SystemUsesLightTheme then
+//      Canvas.Brush.Handle := CreateSolidBrushWithAlpha($dddddd, 200)    else
+//      Canvas.Brush.Handle := CreateSolidBrushWithAlpha($222222, 200);
+//  end;
+//  Canvas.FillRect(Rect(0,0,Width,Height));
+//end;
 
 procedure TfrmMenu.tmrMenuTimer(Sender: TObject);
 var
@@ -273,7 +335,7 @@ var
 begin
   if DetectFullScreen3D then Exit;
   if DetectFullScreenApp(GetForegroundWindow) then Exit;
-  
+  if IsWindowVisible(pm1.WindowHandle) then Exit;
 
   try
     pos := Mouse.CursorPos;
@@ -332,7 +394,7 @@ begin
 
 end;
 
-procedure TfrmMenu.imgSearchClick(Sender: TObject);
+procedure TfrmMenu.imgChatGPTClick(Sender: TObject);
 begin
   mainBrowser.Height := Screen.WorkAreaRect.Height;
   mainBrowser.Left := Screen.WorkAreaRect.Width - mainBrowser.Width;
@@ -355,6 +417,41 @@ begin
   end;
 end;
 
+procedure TfrmMenu.imgChatGPTContextPopup(Sender: TObject; MousePos: TPoint;
+  var Handled: Boolean);
+begin
+  FCurrentPopupCardId := mainBrowser.ChatGPTID;
+end;
+
+procedure TfrmMenu.imgClaudeClick(Sender: TObject);
+begin
+  mainBrowser.Height := Screen.WorkAreaRect.Height;
+  mainBrowser.Left := Screen.WorkAreaRect.Width - mainBrowser.Width;
+  mainBrowser.Top := Screen.WorkAreaRect.Top;
+  if mainBrowser.ClaudeID > 0 then
+  begin
+    if mainBrowser.CardPanel1.ActiveCardIndex <> pred(mainBrowser.ClaudeID)
+    then
+    begin
+      mainBrowser.CardPanel1.ActiveCardIndex := pred(mainBrowser.ClaudeID);
+      mainBrowser.Visible := True;
+    end
+    else
+      mainBrowser.Visible := not mainBrowser.Visible;
+  end
+  else
+  begin
+    mainBrowser.Visible := True;
+    mainBrowser.CreateClaudeChat;
+  end;
+end;
+
+procedure TfrmMenu.imgClaudeContextPopup(Sender: TObject; MousePos: TPoint;
+  var Handled: Boolean);
+begin
+  FCurrentPopupCardId := mainBrowser.ClaudeID;
+end;
+
 procedure TfrmMenu.tmrHideMenuTimer(Sender: TObject);
 begin
   if not tmrShowMenu.Enabled then
@@ -367,9 +464,10 @@ begin
       // modificamos las posiciones de los iconos
       imgMenu.Left := 40;
       imgShare.Left := 50;
-      imgSearch.Left := 60;
+      imgChatGPT.Left := 60;
       imgConnect.Left := 50;
       imgSettings.Left := 60;
+      imgClaude.Left := 60;
       Left := GetRightMost - 2; // Screen.Width-2;
       frmMenuON := False;
     end;
@@ -389,10 +487,10 @@ begin
   else
     imgShare.Left := 0;
 
-  if imgSearch.Left > 0 then
-    imgSearch.Left := imgSearch.Left - 10
+  if imgChatGPT.Left > 0 then
+    imgChatGPT.Left := imgChatGPT.Left - 10
   else
-    imgSearch.Left := 0;
+    imgChatGPT.Left := 0;
 
   if imgConnect.Left > 0 then
     imgConnect.Left := imgConnect.Left - 10
@@ -403,6 +501,11 @@ begin
     imgSettings.Left := imgSettings.Left - 10
   else
     imgSettings.Left := 0;
+
+  if imgClaude.Left > 0 then
+    imgClaude.Left := imgClaude.Left - 10
+  else
+    imgClaude.Left := 0;
 end;
 
 procedure TfrmMenu.imgConnectClick(Sender: TObject);
@@ -426,6 +529,12 @@ begin
     mainBrowser.Visible := True;
     mainBrowser.CreateBardChat;
   end;
+end;
+
+procedure TfrmMenu.imgConnectContextPopup(Sender: TObject; MousePos: TPoint;
+  var Handled: Boolean);
+begin
+  FCurrentPopupCardId := mainBrowser.BardID;
 end;
 
 procedure TfrmMenu.FormShow(Sender: TObject);
@@ -456,6 +565,12 @@ begin
   end;
 end;
 
+procedure TfrmMenu.imgSettingsContextPopup(Sender: TObject; MousePos: TPoint;
+  var Handled: Boolean);
+begin
+  FCurrentPopupCardId := mainBrowser.YouID;
+end;
+
 procedure TfrmMenu.imgShareClick(Sender: TObject);
 begin
   mainBrowser.Height := Screen.WorkAreaRect.Height;
@@ -477,6 +592,59 @@ begin
     mainBrowser.Visible := True;
     mainBrowser.CreateBingChat;
   end;
+end;
+
+procedure TfrmMenu.imgShareContextPopup(Sender: TObject; MousePos: TPoint;
+  var Handled: Boolean);
+begin
+  FCurrentPopupCardId := mainBrowser.BingID;
+end;
+
+procedure TfrmMenu.pmCardCloseClick(Sender: TObject);
+var
+  TempCard: tbrowsercard;
+  I: Integer;
+begin
+  for I := 0 to mainBrowser.CardPanel1.CardCount - 1 do
+  begin
+    if mainBrowser.CardPanel1.Cards[I].Tag = FCurrentPopupCardId then
+    begin
+
+    end;
+  end;
+
+  if FCurrentPopupCardId = mainBrowser.ChatGPTID then
+  begin
+     TempCard := TBrowserCard(mainBrowser.CardPanel1.Cards[pred(mainBrowser.ChatGPTID)]);
+     TempCard.Free;
+     mainBrowser.ChatGPTID := 0;
+  end
+  else if FCurrentPopupCardId = mainBrowser.BingID then
+  begin
+     TempCard := TBrowserCard(mainBrowser.CardPanel1.Cards[pred(mainBrowser.BingID)]);
+     TempCard.Free;
+     mainBrowser.BingID := 0;
+  end
+  else if FCurrentPopupCardId = mainBrowser.BardID then
+  begin
+     TempCard := TBrowserCard(mainBrowser.CardPanel1.Cards[pred(mainBrowser.BardID)]);
+     TempCard.Free;
+     mainBrowser.BardID := 0;
+  end
+  else if FCurrentPopupCardId = mainBrowser.YouID then
+  begin
+     TempCard := TBrowserCard(mainBrowser.CardPanel1.Cards[pred(mainBrowser.YouID)]);
+     TempCard.Free;
+     mainBrowser.YouID := 0;
+  end
+end;
+
+procedure TfrmMenu.pmCardPopup(Sender: TObject);
+begin
+  if FCurrentPopupCardId > 0 then
+    pmCardClose.Enabled := True
+  else
+    pmCardClose.Enabled := False;
 end;
 
 end.
