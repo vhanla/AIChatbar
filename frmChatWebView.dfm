@@ -14,6 +14,7 @@ object mainBrowser: TmainBrowser
   Font.Style = []
   StyleElements = [seFont]
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnPaint = FormPaint
   OnShow = FormShow
   TextHeight = 15

@@ -2,10 +2,12 @@ unit frmChatWebView;
 
 interface
 
+{$I ProjectDefines.inc}
+
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.WinXPanels,
-  uWVLoader, uWVCoreWebView2Args, scStyledForm;
+  uWVLoader, uWVCoreWebView2Args {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
 
 const
   WV_INITIALIZED = WM_APP + $100;
@@ -18,13 +20,17 @@ type
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormPaint(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
     FBingID: Cardinal;
     FBardID: Cardinal;
     FChatGPTID: Cardinal;
     FYouID: Cardinal;
-
+    FClaudeID: Cardinal;
+    {$IFDEF EXPERIMENTAL}
+      {$I experimental.object.inc}
+    {$IFEND}
   protected
     FLastCardID       : cardinal;
 
@@ -40,15 +46,17 @@ type
     procedure WMMoving(var aMessage : TMessage); message WM_MOVING;
 
     procedure CreateNewCard(const aArgs : TCoreWebView2NewWindowRequestedEventArgs);
-    procedure CreateBingChat;
-    procedure CreateBardChat;
-    procedure CreateGPTChat;
-    procedure CreateYouChat;
+    function CreateBingChat: Integer;
+    function CreateBardChat: Integer;
+    function CreateGPTChat: Integer;
+    function CreateYouChat: Integer;
+    function CreateClaudeChat: Integer;
 
-    property BingID: Cardinal read FBingID default 0;
-    property BardID: Cardinal read FBardID default 0;
-    property ChatGPTID: Cardinal read FChatGPTID default 0;
-    property YouID: Cardinal read FYouID default 0;
+    property BingID: Cardinal read FBingID write FBingID default 0;
+    property BardID: Cardinal read FBardID write FBardID default 0;
+    property ChatGPTID: Cardinal read FChatGPTID write FChatGPTID default 0;
+    property YouID: Cardinal read FYouID write FYouID default 0;
+    property ClaudeID: Cardinal read FClaudeID write FClaudeID default 0;
   end;
 
 var
@@ -63,11 +71,12 @@ uses
 
 { TForm1 }
 
-procedure TmainBrowser.CreateBardChat;
+function TmainBrowser.CreateBardChat: Integer;
 var
   TempNewCard : TBrowserCard;
   CardID: Cardinal;
 begin
+  Result := -1;
   if FBardID > 0 then Exit;
 
   CardID := NextCardID;
@@ -76,14 +85,16 @@ begin
   TempNewCard.Tag := CardID;
   CardPanel1.ActiveCardIndex := pred(CardPanel1.CardCount);
   FBardID := CardPanel1.CardCount;
+  Result := pred(FBardID);
   TempNewCard.CreateBrowser('https://bard.google.com/');
 end;
 
-procedure TmainBrowser.CreateBingChat;
+function TmainBrowser.CreateBingChat: Integer;
 var
   TempNewCard : TBrowserCard;
   CardID: Cardinal;
 begin
+  Result := -1;
   if FBingID > 0 then Exit;
 
   CardID := NextCardID;
@@ -93,16 +104,36 @@ begin
   TempNewCard.Tag := CardID;
   CardPanel1.ActiveCardIndex := pred(CardPanel1.CardCount);
   FBingID := CardPanel1.CardCount;
+  Result := pred(FBingID);
   TempNewCard.CreateBrowser('https://edgeservices.bing.com/edgediscover/query?&darkschemeovr=1&FORM=SHORUN&udscs=1&udsnav=1&setlang=en-GB&features=udssydinternal&clientscopes=windowheader,coauthor,chat,&udsframed=1');
 //  TempNewCard.CreateBrowser('https://www.microsoft.com/es-mx/edge/launch/newBinginEdge');
 //  TempNewCard.CreateBrowser('https://bard.google.com')
 end;
 
-procedure TmainBrowser.CreateGPTChat;
+function TmainBrowser.CreateClaudeChat: Integer;
 var
   TempNewCard : TBrowserCard;
   CardID: Cardinal;
 begin
+  Result := -1;
+  if FClaudeID > 0 then Exit;
+
+  CardID := NextCardID;
+  TempNewCard := TBrowserCard.Create(self, CardID, DEFAULT_TAB_CAPTION);
+  TempNewCard.Parent := CardPanel1;
+  TempNewCard.Tag := CardID;
+  CardPanel1.ActiveCardIndex := pred(CardPanel1.CardCount);
+  FClaudeID := CardPanel1.CardCount;
+  Result := pred(FClaudeID);
+  TempNewCard.CreateBrowser('https://claude.ai');
+end;
+
+function TmainBrowser.CreateGPTChat: Integer;
+var
+  TempNewCard : TBrowserCard;
+  CardID: Cardinal;
+begin
+  Result := -1; // not created
   if FChatGPTID > 0 then Exit;
 
   CardID := NextCardID;
@@ -111,6 +142,7 @@ begin
   TempNewCard.Tag := CardID;
   CardPanel1.ActiveCardIndex := pred(CardPanel1.CardCount);
   FChatGPTID := CardPanel1.CardCount;
+  Result := pred(FChatGPTID);
   TempNewCard.CreateBrowser('https://chat.openai.com/');
 end;
 
@@ -127,11 +159,12 @@ begin
   TempNewCard.CreateBrowser(aArgs);
 end;
 
-procedure TmainBrowser.CreateYouChat;
+function TmainBrowser.CreateYouChat: Integer;
 var
   TempNewCard : TBrowserCard;
   CardID: Cardinal;
 begin
+  Result := -1;
   if FYouID > 0 then Exit;
 
   CardID := NextCardID;
@@ -140,12 +173,24 @@ begin
   TempNewCard.Tag := CardID;
   CardPanel1.ActiveCardIndex := pred(CardPanel1.CardCount);
   FYouID := CardPanel1.CardCount;
+  Result := pred(FYouID);
   TempNewCard.CreateBrowser('https://you.com/search?q=who+are+you&tbm=youchat');
 end;
 
 procedure TmainBrowser.FormCreate(Sender: TObject);
 begin
-  EnableBlur(Handle);
+  {$IFDEF EXPERIMENTAL}
+    {$I experimental.create.inc}
+  {$ELSE}
+    EnableBlur(Handle);
+  {$IFEND}
+end;
+
+procedure TmainBrowser.FormDestroy(Sender: TObject);
+begin
+  {$IFDEF EXPERIMENTAL}
+    {$I experimental.destroy.inc}
+  {$IFEND}
 end;
 
 procedure TmainBrowser.FormPaint(Sender: TObject);
@@ -225,6 +270,8 @@ end;
 
 initialization
   GlobalWebView2Loader                      := TWVLoader.Create(nil);
+  GlobalWebView2Loader.EnableGPU := True;
+  GlobalWebView2Loader.EnableTrackingPrevention := False;
   GlobalWebView2Loader.UserDataFolder       := ExtractFileDir(Application.ExeName) + '\CustomCache';
   GlobalWebView2Loader.OnEnvironmentCreated := GlobalWebView2Loader_OnEnvironmentCreated;
   GlobalWebView2Loader.StartWebView2;
