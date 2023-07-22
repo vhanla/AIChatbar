@@ -31,7 +31,7 @@ type
 implementation
 
 uses
-  frmChatWebView;
+  frmChatWebView, menu;
 
 { TBrowserCard }
 
