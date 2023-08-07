@@ -11,7 +11,6 @@ uses
 
 const
   WV_INITIALIZED = WM_APP + $100;
-  HOMEPAGE_URL        = 'https://www.bing.com';
   DEFAULT_TAB_CAPTION = 'New tab';
 
 type
@@ -54,18 +53,8 @@ type
     procedure WMMoving(var aMessage : TMessage); message WM_MOVING;
 
     procedure CreateNewCard(const aArgs : TCoreWebView2NewWindowRequestedEventArgs);
-    function CreateBingChat: Integer;
-    function CreateBardChat: Integer;
-    function CreateGPTChat: Integer;
-    function CreateYouChat: Integer;
-    function CreateClaudeChat: Integer;
-    function CreateNewSite(const Id: Integer; const url: string): Integer;
+    function CreateNewSite(const Id: Integer; const url, ua: string): Integer;
 
-    property BingID: Cardinal read FBingID write FBingID default 0;
-    property BardID: Cardinal read FBardID write FBardID default 0;
-    property ChatGPTID: Cardinal read FChatGPTID write FChatGPTID default 0;
-    property YouID: Cardinal read FYouID write FYouID default 0;
-    property ClaudeID: Cardinal read FClaudeID write FClaudeID default 0;
   end;
 
 var
@@ -80,80 +69,7 @@ uses
 
 { TForm1 }
 
-function TmainBrowser.CreateBardChat: Integer;
-var
-  TempNewCard : TBrowserCard;
-  CardID: Cardinal;
-begin
-  Result := -1;
-  if FBardID > 0 then Exit;
 
-  CardID := NextCardID;
-  TempNewCard := TBrowserCard.Create(self, CardID, DEFAULT_TAB_CAPTION);
-  TempNewCard.Parent := CardPanel1;
-  TempNewCard.Tag := CardID;
-  CardPanel1.ActiveCardIndex := pred(CardPanel1.CardCount);
-  FBardID := CardPanel1.CardCount;
-  Result := pred(FBardID);
-  TempNewCard.CreateBrowser('https://bard.google.com/');
-end;
-
-function TmainBrowser.CreateBingChat: Integer;
-var
-  TempNewCard : TBrowserCard;
-  CardID: Cardinal;
-begin
-  Result := -1;
-  if FBingID > 0 then Exit;
-
-  CardID := NextCardID;
-  TempNewCard := TBrowserCard.Create(self, CardID, DEFAULT_TAB_CAPTION);
-//  TempNewCard.CardPanel := CardPanel1;
-  TempNewCard.Parent := CardPanel1;
-  TempNewCard.Tag := CardID;
-  CardPanel1.ActiveCardIndex := pred(CardPanel1.CardCount);
-  FBingID := CardPanel1.CardCount;
-  Result := pred(FBingID);
-  TempNewCard.CreateBrowser('https://edgeservices.bing.com/edgediscover/query?&darkschemeovr=1&FORM=SHORUN&udscs=1&udsnav=1&setlang=en-GB&features=udssydinternal&clientscopes=windowheader,coauthor,chat,&udsframed=1');
-//  TempNewCard.CreateBrowser('https://www.microsoft.com/es-mx/edge/launch/newBinginEdge');
-//  TempNewCard.CreateBrowser('https://bard.google.com')
-end;
-
-function TmainBrowser.CreateClaudeChat: Integer;
-var
-  TempNewCard : TBrowserCard;
-  CardID: Cardinal;
-begin
-  Result := -1;
-  if FClaudeID > 0 then Exit;
-
-  CardID := NextCardID;
-  TempNewCard := TBrowserCard.Create(self, CardID, DEFAULT_TAB_CAPTION);
-  TempNewCard.Parent := CardPanel1;
-  TempNewCard.Tag := CardID;
-  CardPanel1.ActiveCardIndex := pred(CardPanel1.CardCount);
-  FClaudeID := CardPanel1.CardCount;
-  Result := pred(FClaudeID);
-  TempNewCard.CreateBrowser('https://claude.ai');
-end;
-
-function TmainBrowser.CreateGPTChat: Integer;
-var
-  TempNewCard : TBrowserCard;
-  CardID: Cardinal;
-begin
-  Result := -1; // not created
-  if FChatGPTID > 0 then Exit;
-
-  CardID := NextCardID;
-  TempNewCard := TBrowserCard.Create(self, CardID, DEFAULT_TAB_CAPTION);
-  TempNewCard.Parent := CardPanel1;
-  TempNewCard.Tag := CardID;
-  CardPanel1.ActiveCardIndex := pred(CardPanel1.CardCount);
-  FChatGPTID := CardPanel1.CardCount;
-  Result := pred(FChatGPTID);
-  TempNewCard.CreateBrowser('https://chat.openai.com/');
-end;
 
 procedure TmainBrowser.CreateNewCard(
   const aArgs: TCoreWebView2NewWindowRequestedEventArgs);
@@ -168,7 +84,7 @@ begin
   TempNewCard.CreateBrowser(aArgs);
 end;
 
-function TmainBrowser.CreateNewSite(const Id: Integer; const url: string): Integer;
+function TmainBrowser.CreateNewSite(const Id: Integer; const url, ua: string): Integer;
 var
   TempNewCard : TBrowserCard;
   CardID: Cardinal;
@@ -182,26 +98,10 @@ begin
 //  CardPanel1.ActiveCardIndex := pred(CardPanel1.CardCount);
 //  FClaudeID := CardPanel1.CardCount;
   Result := CardID;
-  TempNewCard.CreateBrowser(url);
+  TempNewCard.CreateBrowser(url, ua);
 end;
 
-function TmainBrowser.CreateYouChat: Integer;
-var
-  TempNewCard : TBrowserCard;
-  CardID: Cardinal;
-begin
-  Result := -1;
-  if FYouID > 0 then Exit;
 
-  CardID := NextCardID;
-  TempNewCard := TBrowserCard.Create(self, CardID, DEFAULT_TAB_CAPTION);
-  TempNewCard.Parent := CardPanel1;
-  TempNewCard.Tag := CardID;
-  CardPanel1.ActiveCardIndex := pred(CardPanel1.CardCount);
-  FYouID := CardPanel1.CardCount;
-  Result := pred(FYouID);
-  TempNewCard.CreateBrowser('https://you.com/search?q=who+are+you&tbm=youchat');
-end;
 
 procedure TmainBrowser.FormCreate(Sender: TObject);
 begin
