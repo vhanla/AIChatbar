@@ -2,7 +2,7 @@ unit functions;
 
 interface
 
-uses ComObj, TlHelp32, SysUtils, Windows, Registry, Forms, Winapi.DwmApi, Vcl.Graphics;
+uses ComObj, TlHelp32, SysUtils, Windows, Registry, Forms, Winapi.DwmApi, Vcl.Graphics, PsAPI;
 
 procedure ShowDesktop;
 procedure DisableTaskMgr(bTF: Boolean);
@@ -32,11 +32,13 @@ function GetBottomMost: integer;
 function isAcrylicSupported:boolean;
 function isWindows11: boolean;
 procedure EnableBlur(Wnd: HWND; Enable: Boolean = True);
+procedure EnableNCShadow(Wnd: HWND);
 function TaskbarAccented:Boolean;
 function GetAccentColor:TColor;
 function SystemUsesLightTheme:boolean;
 function BlendColors(Col1, Col2: TColor; A: Byte): TColor;
 function CreateSolidBrushWithAlpha(Color: TColor; Alpha: Byte = $FF): HBRUSH;
+function GetRAMUsage: Int64;
 
 implementation
 
@@ -493,6 +495,23 @@ begin
   end;
 end;
 
+procedure EnableNCShadow(Wnd: HWND);
+const
+  DWMWCP_DEFAULT    = 0; // Let the system decide whether or not to round window corners
+  DWMWCP_DONOTROUND = 1; // Never round window corners
+  DWMWCP_ROUND      = 2; // Round the corners if appropriate
+  DWMWCP_ROUNDSMALL = 3; // Round the corners if appropriate, with a small radius
+  DWMWA_WINDOW_CORNER_PREFERENCE = 33; // [set] WINDOW_CORNER_PREFERENCE, Controls the policy that rounds top-level window corners
+begin
+
+  if isWindows11  then
+  begin
+    var DWM_WINDOW_CORNER_PREFERENCE: Cardinal;
+    DWM_WINDOW_CORNER_PREFERENCE := DWMWCP_ROUNDSMALL;
+     DwmSetWindowAttribute(Wnd, DWMWA_WINDOW_CORNER_PREFERENCE, @DWM_WINDOW_CORNER_PREFERENCE, sizeof(DWM_WINDOW_CORNER_PREFERENCE));
+  end;
+end;
+
 function TaskbarAccented:Boolean;
 var
   reg: TRegistry;
@@ -610,5 +629,14 @@ function CreateSolidBrushWithAlpha(Color: TColor; Alpha: Byte = $FF): HBRUSH;
     Result := CreateDIBPatternBrushPt(@Info, 0);
   end;
 
+
+  function GetRAMUsage: Int64;
+  var
+    pmc: PROCESS_MEMORY_COUNTERS;
+  begin
+    Result := 0;
+    if GetProcessMemoryInfo(GetCurrentProcess, @pmc, SizeOf(pmc)) then
+      Result := pmc.WorkingSetSize;
+  end;
 
 end.
