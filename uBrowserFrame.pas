@@ -39,6 +39,7 @@ type
       const aArgs: ICoreWebView2WebMessageReceivedEventArgs);
   private
     { Private declarations }
+    FChildHandle: THandle;
   protected
     FHomepage             : wvstring;
     FOnBrowserTitleChange : TBrowserTitleEvent;
@@ -61,6 +62,7 @@ type
     property  Homepage             : wvstring                                  read FHomepage              write FHomepage;
     property  OnBrowserTitleChange : TBrowserTitleEvent                        read FOnBrowserTitleChange  write FOnBrowserTitleChange;
     property  Args                 : TCoreWebView2NewWindowRequestedEventArgs  read FArgs                  write SetArgs;
+    property  ChildHandle          : THandle                                   read FChildHandle;
   end;
 
 implementation
@@ -90,6 +92,7 @@ begin
   WVBrowser1.DefaultURL := FHomepage;
 //  WVBrowser1.UserAgent := 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.0.0';
   WVBrowser1.CreateBrowser(WVWindowParent1.Handle);
+  FChildHandle := WVWindowParent1.ChildWindowHandle;
 end;
 
 destructor TBrowserFrame.Destroy;
@@ -164,7 +167,7 @@ begin
 //  UpdateNavButtons(False);
   SkAnimatedImage1.Enabled := False;
   SkAnimatedImage1.Visible := False;
-
+  Winapi.Windows.SetFocus(WVWindowParent1.ChildWindowHandle);
 end;
 
 procedure TBrowserFrame.WVBrowser1NavigationStarting(Sender: TObject;
