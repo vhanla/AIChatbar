@@ -11,20 +11,86 @@ uses
   FireDAC.DApt.Intf, FireDAC.DApt, FireDAC.Comp.DataSet;
 
 type
+  TSite = class
+  private
+    FId: Integer;
+    FName: string;
+    FUrl: string;
+    FAltUrl: string;
+    FIcon: string;
+    FPosition: Integer;
+    FUserScript: string;
+    FUserStyle: string;
+    FUserScriptEnabled: Boolean;
+    FUserStyleEnabled: Boolean;
+    FEnabled: Boolean;
+  published
+    property Id: Integer read FId write FId;
+    property Name: string read FName write FName;
+    property Url: string read FUrl write FUrl;
+    property AltUrl: string read FAltUrl write FAltUrl;
+    property Icon: string read FIcon write FIcon;
+    property Position: Integer read FPosition write FPosition;
+    property UserStyle: string read FUserStyle write FUserStyle;
+    property UserScript: string read FUserScript write FUserScript;
+    property UserStyleEnabled: Boolean read FUserStyleEnabled write FUserStyleEnabled;
+    property UserScriptEnabled: Boolean read FUserScriptEnabled write FUserScriptEnabled;
+    property Enabled: Boolean read FEnabled write FEnabled;
+  end;
+
   TSettings = class
   private
     FDB: TFDConnection;
+    FSites: TObjectList<TSite>;
   public
     procedure CreateTables;
     constructor Create(const settingsPath: string);
     destructor Destroy; override;
 
+    procedure AddSites(const name, url, alturl, svgicon, uscript, ustyle: string;
+      uscriptOn, ustyleOn, enabled: Boolean; position: Integer);
+
+    procedure ReadSites;
+
     property DB: TFDConnection read FDB;
+    property Sites: TObjectList<TSite> read FSites write FSites;
   end;
 
 implementation
 
 { TSettings }
+
+procedure TSettings.AddSites(const name, url, alturl, svgicon, uscript,
+  ustyle: string; uscriptOn, ustyleOn, enabled: Boolean; position: Integer);
+var
+  q: TFDQuery;
+begin
+  q := TFDQuery.Create(nil);
+  try
+    q.Connection := FDB;
+    q.SQL.Text := 'INSERT OR IGNORE INTO settings (name, url, alturl, svgIcon,' +
+                   'userscript, userscriptactive,' +
+                   'userstyle, userstyleactive,' +
+                   'enabled, position) VALUES (:name, :url, :alturl, :svgIcon,' +
+                   ':userscript, :userscriptactive,' +
+                   ':userstyle, :userstyleactive,' +
+                   ':enabled, :position)';
+    q.Params.ParamByName('name').AsWideString := name;
+    q.Params.ParamByName('url').AsWideString := url;
+    q.Params.ParamByName('alturl').AsWideString := alturl;
+    q.Params.ParamByName('svgIcon').AsWideString := svgicon;
+    q.Params.ParamByName('userscript').AsWideString := uscript;
+    q.Params.ParamByName('userscriptactive').AsBoolean := uscriptOn;
+    q.Params.ParamByName('userstyle').AsWideString := ustyle;
+    q.Params.ParamByName('userstyleactive').AsBoolean := ustyleOn;
+    q.Params.ParamByName('enabled').AsBoolean := enabled;
+    q.Params.ParamByName('position').AsInteger := position;
+
+    q.ExecSQL;
+  finally
+    q.Free;
+  end;
+end;
 
 constructor TSettings.Create(const settingsPath: string);
 var
@@ -45,6 +111,7 @@ begin
     end;
   end;
 
+  FSites := TObjectList<TSite>.Create;
 end;
 
 procedure TSettings.CreateTables;
@@ -70,8 +137,49 @@ end;
 destructor TSettings.Destroy;
 begin
   inherited;
+  FSites.Free;
   FDB.CloneConnection;
   FDB.Free;
+end;
+
+procedure TSettings.ReadSites;
+var
+  q: TFDQuery;
+begin
+  q := TFDQuery.Create(nil);
+  try
+    q.Connection := FDB;
+    q.SQL.Text := 'SELECT * FROM settings';
+    q.Open;
+    // clear current FSites if it is filled already
+    FSites.Clear;
+    while not q.Eof do
+    begin
+      var site := TSite.Create;
+      try
+        with site do
+        begin
+          FId := q.FieldByName('id').AsInteger;
+          FName := q.FieldByName('name').AsWideString;
+          FUrl := q.FieldByName('url').AsWideString;
+          FAltUrl := q.FieldByName('alturl').AsWideString;
+          FIcon := q.FieldByName('svgIcon').AsWideString;
+          FUserScript := q.FieldByName('userscript').AsWideString;
+          FUserScriptEnabled := Boolean(q.FieldByName('userscriptactive').AsInteger);
+          FUserStyle := q.FieldByName('userstyle').AsWideString;
+          FUserStyleEnabled := Boolean(q.FieldByName('userstyleactive').AsInteger);
+          FEnabled := Boolean(q.FieldByName('enabled').AsInteger);
+          FPosition := q.FieldByName('position').AsInteger;
+        end;
+        FSites.Add(site);
+      finally
+        //site.Free; <// do not free, otherwise it won't be accessible anyumore, clear or destroy handles it
+      end;
+      q.Next;
+    end;
+  finally
+    q.Free;
+  end;
 end;
 
 end.
