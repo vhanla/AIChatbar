@@ -21,8 +21,8 @@ Todo:
 - [ ] Multimonitor support
 - [ ] Custom style sheets support
 - [ ] Custom userscripts support
-- [ ] Custom websites to add
-- [ ] Global Hotkey for keyboard users only with Command Palette like UI to invoke them
+- [x] Custom websites to add
+- [x] Global Hotkey for keyboard users only with Command Palette like UI to invoke them
 - [ ] TTS (Text To Speech)
 - [ ] Native (non WebView2) client for OpenAI, LLaMA, unofficial APIs too.
 - [ ] UIAutomation to interact with the OS Applications.
