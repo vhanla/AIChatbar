@@ -24,6 +24,7 @@ type
     FUserScriptEnabled: Boolean;
     FUserStyleEnabled: Boolean;
     FEnabled: Boolean;
+    FUA: string;
   published
     property Id: Integer read FId write FId;
     property Name: string read FName write FName;
@@ -36,6 +37,7 @@ type
     property UserStyleEnabled: Boolean read FUserStyleEnabled write FUserStyleEnabled;
     property UserScriptEnabled: Boolean read FUserScriptEnabled write FUserScriptEnabled;
     property Enabled: Boolean read FEnabled write FEnabled;
+    property UA: string read FUA write FUA;
   end;
 
   TSettings = class
@@ -48,7 +50,7 @@ type
     destructor Destroy; override;
 
     procedure AddSites(const name, url, alturl, svgicon, uscript, ustyle: string;
-      uscriptOn, ustyleOn, enabled: Boolean; position: Integer);
+      uscriptOn, ustyleOn, enabled: Boolean; position: Integer; const UA: string);
 
     procedure ReadSites;
 
@@ -61,7 +63,7 @@ implementation
 { TSettings }
 
 procedure TSettings.AddSites(const name, url, alturl, svgicon, uscript,
-  ustyle: string; uscriptOn, ustyleOn, enabled: Boolean; position: Integer);
+  ustyle: string; uscriptOn, ustyleOn, enabled: Boolean; position: Integer; const UA: string);
 var
   q: TFDQuery;
 begin
@@ -71,10 +73,10 @@ begin
     q.SQL.Text := 'INSERT OR IGNORE INTO settings (name, url, alturl, svgIcon,' +
                    'userscript, userscriptactive,' +
                    'userstyle, userstyleactive,' +
-                   'enabled, position) VALUES (:name, :url, :alturl, :svgIcon,' +
+                   'enabled, position, ua) VALUES (:name, :url, :alturl, :svgIcon,' +
                    ':userscript, :userscriptactive,' +
                    ':userstyle, :userstyleactive,' +
-                   ':enabled, :position)';
+                   ':enabled, :position, :ua)';
     q.Params.ParamByName('name').AsWideString := name;
     q.Params.ParamByName('url').AsWideString := url;
     q.Params.ParamByName('alturl').AsWideString := alturl;
@@ -85,6 +87,7 @@ begin
     q.Params.ParamByName('userstyleactive').AsBoolean := ustyleOn;
     q.Params.ParamByName('enabled').AsBoolean := enabled;
     q.Params.ParamByName('position').AsInteger := position;
+    q.Params.ParamByName('ua').AsWideString := UA;
 
     q.ExecSQL;
   finally
@@ -125,7 +128,7 @@ begin
                    'name TEXT, url TEXT, alturl TEXT, svgIcon TEXT,' +
                    'userscript TEXT, userscriptactive INTEGER,' +
                    'userstyle TEXT, userstyleactive INTEGER,' +
-                   'enabled INTEGER, position INTEGER)';
+                   'enabled INTEGER, position INTEGER, ua TEXT)';
     qr.ExecSQL;
     qr.SQL.Text := 'CREATE UNIQUE INDEX IF NOT EXISTS name_index on settings(name)';
     qr.ExecSQL;
@@ -170,6 +173,7 @@ begin
           FUserStyleEnabled := Boolean(q.FieldByName('userstyleactive').AsInteger);
           FEnabled := Boolean(q.FieldByName('enabled').AsInteger);
           FPosition := q.FieldByName('position').AsInteger;
+          FUA := q.FieldByName('ua').AsWideString;
         end;
         FSites.Add(site);
       finally
