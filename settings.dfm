@@ -127,7 +127,7 @@ object frmSetting: TfrmSetting
     Top = 62
     Width = 641
     Height = 363
-    ActivePage = TabSheet5
+    ActivePage = TabSheet2
     Anchors = [akLeft, akTop, akRight, akBottom]
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -3107,6 +3107,13 @@ object frmSetting: TfrmSetting
         OnClick = Frame11btnOKClick
         ExplicitLeft = 436
         ExplicitTop = 322
+      end
+      inherited lblUA: TLabeledEdit
+        EditLabel.Width = 93
+        EditLabel.Height = 13
+        EditLabel.ExplicitTop = 160
+        EditLabel.ExplicitWidth = 93
+        EditLabel.ExplicitHeight = 13
       end
     end
   end

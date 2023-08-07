@@ -371,7 +371,8 @@ begin
     Frame11.ckUserScript.Enabled,
     Frame11.ckUserStyle.Enabled,
     Frame11.ckEnabled.Enabled,
-    0
+    0,
+    Frame11.lblUA.Text
   );
   pnlEditSite.Visible := False;
 end;
