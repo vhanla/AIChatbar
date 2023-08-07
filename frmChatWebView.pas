@@ -7,7 +7,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.WinXPanels,
-  uWVLoader, uWVCoreWebView2Args {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
+  uWVLoader, uWVCoreWebView2Args, UWP.QuickButton, JvComponentBase, JvAppEvent {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
 
 const
   WV_INITIALIZED = WM_APP + $100;
@@ -17,10 +17,18 @@ const
 type
   TmainBrowser = class(TForm)
     CardPanel1: TCardPanel;
+    Panel1: TPanel;
+    UWPQuickButton1: TUWPQuickButton;
+    Timer1: TTimer;
+    tmrRamUsage: TTimer;
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormPaint(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure Panel1MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Timer1Timer(Sender: TObject);
+    procedure tmrRamUsageTimer(Sender: TObject);
   private
     { Private declarations }
     FBingID: Cardinal;
@@ -51,6 +59,7 @@ type
     function CreateGPTChat: Integer;
     function CreateYouChat: Integer;
     function CreateClaudeChat: Integer;
+    function CreateNewSite(const Id: Integer; const url: string): Integer;
 
     property BingID: Cardinal read FBingID write FBingID default 0;
     property BardID: Cardinal read FBardID write FBardID default 0;
@@ -67,7 +76,7 @@ implementation
 {$R *.dfm}
 
 uses
-  uBrowserCard, functions;
+  uBrowserCard, functions, menu;
 
 { TForm1 }
 
@@ -159,6 +168,23 @@ begin
   TempNewCard.CreateBrowser(aArgs);
 end;
 
+function TmainBrowser.CreateNewSite(const Id: Integer; const url: string): Integer;
+var
+  TempNewCard : TBrowserCard;
+  CardID: Cardinal;
+begin
+  Result := -1;
+
+  CardID := Id;
+  TempNewCard := TBrowserCard.Create(self, CardID, DEFAULT_TAB_CAPTION);
+  TempNewCard.Parent := CardPanel1;
+  TempNewCard.Tag := CardID;
+//  CardPanel1.ActiveCardIndex := pred(CardPanel1.CardCount);
+//  FClaudeID := CardPanel1.CardCount;
+  Result := CardID;
+  TempNewCard.CreateBrowser(url);
+end;
+
 function TmainBrowser.CreateYouChat: Integer;
 var
   TempNewCard : TBrowserCard;
@@ -226,6 +252,58 @@ begin
 
   Inc(FLastCardID);
   Result := FLastCardID;
+end;
+
+procedure TmainBrowser.Panel1MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  ReleaseCapture;
+  Perform(WM_SYSCOMMAND, $F012, 0);
+end;
+
+procedure TmainBrowser.Timer1Timer(Sender: TObject);
+var
+  pos: TPoint;
+begin
+  try
+    pos := Mouse.CursorPos;
+  except
+  end;
+
+  if (pos.X > Left) and (pos.X < Left+Width)
+  and (pos.Y > Top) and (pos.Y < Top+Panel1.Height)
+  then
+  begin
+    Panel1.Visible := True;
+//    CardPanel1.Margins.Top := 0;
+  end
+  else
+  begin
+    Panel1.Visible := False;
+//    CardPanel1.Margins.Top := Panel1.Height;
+  end;
+
+end;
+
+procedure TmainBrowser.tmrRamUsageTimer(Sender: TObject);
+const
+  B = 1;
+  KB = 1024 * B;
+  MB = 1024 * KB;
+  GB = 1024 * MB;
+var
+  Bytes: Int64;
+begin
+  Bytes := GetRAMUsage;
+
+  if Bytes > GB then
+    Panel1.Caption := FormatFloat('Memory Used: #.## GB', Bytes / GB)
+  else if Bytes > MB then
+    Panel1.Caption := FormatFloat('Memory Used: #.## MB', Bytes / MB)
+  else if Bytes > KB then
+    Panel1.Caption := FormatFloat('Memory Used: #.## KB', Bytes / KB)
+  else
+    Panel1.Caption := FormatFloat('Memory Used: #.## bytes', Bytes);
 end;
 
 procedure TmainBrowser.WMMove(var aMessage: TWMMove);
