@@ -42,6 +42,7 @@ type
     FChildHandle: THandle;
   protected
     FHomepage             : wvstring;
+    FUA                   : wvstring;
     FOnBrowserTitleChange : TBrowserTitleEvent;
     FArgs                 : TCoreWebView2NewWindowRequestedEventArgs;
     FDeferral             : TCoreWebView2Deferral;
@@ -60,6 +61,7 @@ type
 
     property  Initialized          : boolean                                   read GetInitialized;
     property  Homepage             : wvstring                                  read FHomepage              write FHomepage;
+    property  UA                   : wvstring                                  read FUA                    write FUA;
     property  OnBrowserTitleChange : TBrowserTitleEvent                        read FOnBrowserTitleChange  write FOnBrowserTitleChange;
     property  Args                 : TCoreWebView2NewWindowRequestedEventArgs  read FArgs                  write SetArgs;
     property  ChildHandle          : THandle                                   read FChildHandle;
@@ -125,7 +127,10 @@ end;
 
 procedure TBrowserFrame.WVBrowser1AfterCreated(Sender: TObject);
 begin
-  WVBrowser1.UserAgent := 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.0.0';
+  if FUA = '' then
+    WVBrowser1.UserAgent := 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.0.0'
+  else
+    WVBrowser1.UserAgent := FUA;
   if assigned(FArgs) and assigned(FDeferral) then
     try
       FArgs.NewWindow := WVBrowser1.CoreWebView2.BaseIntf;
