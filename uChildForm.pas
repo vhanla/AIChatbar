@@ -6,12 +6,13 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   uWVBrowser, uWVWinControl, uWVWindowParent, uWVTypes, uWVTypeLibrary,
-  uWVBrowserBase, uWVCoreWebView2Args, uWVCoreWebView2Deferral;
+  uWVBrowserBase, uWVCoreWebView2Args, uWVCoreWebView2Deferral, Vcl.ComCtrls;
 
 type
   TChildForm = class(TForm)
     WVWindowParent1: TWVWindowParent;
     WVBrowser1: TWVBrowser;
+    StatusBar1: TStatusBar;
 
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
@@ -22,6 +23,8 @@ type
     procedure WVBrowser1NewWindowRequested(Sender: TObject;
       const aWebView: ICoreWebView2;
       const aArgs: ICoreWebView2NewWindowRequestedEventArgs);
+    procedure FormCreate(Sender: TObject);
+    procedure FormResize(Sender: TObject);
 
   private
     FArgs     : TCoreWebView2NewWindowRequestedEventArgs;
@@ -39,7 +42,7 @@ implementation
 {$R *.dfm}
 
 uses
-  uWVCoreWebView2WindowFeatures;
+  uWVCoreWebView2WindowFeatures, menu, functions;
 
 constructor TChildForm.Create(AOwner: TComponent; const aArgs : ICoreWebView2NewWindowRequestedEventArgs);
 begin
@@ -54,6 +57,15 @@ begin
   Action := caFree;
 end;
 
+procedure TChildForm.FormCreate(Sender: TObject);
+begin
+  EnableNCShadow(Handle);
+  if frmMenu.PopupWindowRect.Width > 100 then
+  begin
+  BoundsRect := frmMenu.PopupWindowRect;
+  end;
+end;
+
 procedure TChildForm.FormDestroy(Sender: TObject);
 begin
   if assigned(FDeferral) then
@@ -61,6 +73,11 @@ begin
 
   if assigned(FArgs) then
     FreeAndNil(FArgs);
+end;
+
+procedure TChildForm.FormResize(Sender: TObject);
+begin
+  frmMenu.PopupWindowRect := BoundsRect;
 end;
 
 procedure TChildForm.FormShow(Sender: TObject);
