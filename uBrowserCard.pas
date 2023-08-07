@@ -24,7 +24,9 @@ type
     procedure CreateBrowser(const aHomepage : string); overload;
     procedure CreateBrowser(const aArgs : TCoreWebView2NewWindowRequestedEventArgs); overload;
 
-    property CardID             : cardinal   read FCardID;
+    procedure FocusBrowser;
+
+    property CardID            : cardinal   read FCardID;
     property Initialized       : boolean    read GetInitialized;
   end;
 
@@ -72,6 +74,14 @@ begin
   CreateFrame('');
 
   FBrowserFrame.Args := aArgs;
+end;
+
+procedure TBrowserCard.FocusBrowser;
+begin
+  if (FBrowserFrame <> nil) then
+  begin
+    Winapi.Windows.SetFocus(FBrowserFrame.ChildHandle);
+  end;
 end;
 
 procedure TBrowserCard.CreateFrame(const aHomepage: string);
