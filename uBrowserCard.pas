@@ -14,14 +14,14 @@ type
 
     function GetInitialized: Boolean;
 
-    procedure CreateFrame(const aHomepage : string); overload;
+    procedure CreateFrame(const aHomepage, aUA : string); overload;
     procedure CreateFrame(const aArgs : TCoreWebView2NewWindowRequestedEventArgs); overload;
 
     procedure BrowserFrame_OnBrowserTitleChange(Sender: TObject; const aTitle : string);
   public
     constructor Create(AOwner: TComponent; aCardID : cardinal; const aCaption : string); reintroduce;
     procedure NotifyParentWindowPositionChanged;
-    procedure CreateBrowser(const aHomepage : string); overload;
+    procedure CreateBrowser(const aHomepage, aUA: string); overload;
     procedure CreateBrowser(const aArgs : TCoreWebView2NewWindowRequestedEventArgs); overload;
 
     procedure FocusBrowser;
@@ -61,9 +61,9 @@ begin
   if (FBrowserFrame <> nil) then FBrowserFrame.CreateBrowser;
 end;
 
-procedure TBrowserCard.CreateBrowser(const aHomepage: string);
+procedure TBrowserCard.CreateBrowser(const aHomepage, aUA: string);
 begin
-  CreateFrame(aHomepage);
+  CreateFrame(aHomepage, aUA);
 
   if (FBrowserFrame <> nil) then FBrowserFrame.CreateBrowser;
 end;
@@ -71,7 +71,7 @@ end;
 procedure TBrowserCard.CreateFrame(
   const aArgs: TCoreWebView2NewWindowRequestedEventArgs);
 begin
-  CreateFrame('');
+  CreateFrame('', '');
 
   FBrowserFrame.Args := aArgs;
 end;
@@ -84,7 +84,7 @@ begin
   end;
 end;
 
-procedure TBrowserCard.CreateFrame(const aHomepage: string);
+procedure TBrowserCard.CreateFrame(const aHomepage, aUA: string);
 begin
   if (FBrowserFrame = nil) then
     begin
@@ -97,6 +97,7 @@ begin
       FBrowserFrame.CreateAllHandles;
     end;
 
+  FBrowserFrame.UA := aUA;
   FBrowserFrame.Homepage := aHomepage;
 end;
 
