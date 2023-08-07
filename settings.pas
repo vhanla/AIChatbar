@@ -7,14 +7,13 @@ uses
   Dialogs, StdCtrls, jpeg, ExtCtrls, ComCtrls, ImgList, registry, Spin,
   System.ImageList, Vcl.ControlList, Vcl.VirtualImage, Vcl.BaseImageCollection,
   SVGIconImageCollection, Vcl.ToolWin, IconFontsImageListBase,
-  IconFontsImageList, Skia, Skia.Vcl, Vcl.Mask;
+  IconFontsImageList, Skia, Skia.Vcl, Vcl.Mask, frameEditSite, JvExComCtrls,
+  JvHotKey;
 
 type
   TfrmSetting = class(TForm)
     imgLogo: TImage;
     lblTitle: TLabel;
-    lblOk: TLabel;
-    lblCancel: TLabel;
     OpenDialog1: TOpenDialog;
     PageControl1: TPageControl;
     TabSheet1: TTabSheet;
@@ -70,18 +69,21 @@ type
     seThumbsHotArea: TSpinEdit;
     lblThumbsHotArea: TLabel;
     ControlList1: TControlList;
-    Label1: TLabel;
+    lblSiteUrl: TLabel;
     VirtualImage1: TVirtualImage;
-    Label2: TLabel;
+    lblSiteName: TLabel;
     ControlListButton1: TControlListButton;
     ControlListButton2: TControlListButton;
     SVGIconImageCollection1: TSVGIconImageCollection;
     ToolBar1: TToolBar;
     ToolButton1: TToolButton;
     IconFontsImageList1: TIconFontsImageList;
+    pnlEditSite: TPanel;
+    Frame11: TFrame1;
+    Button1: TButton;
+    Button2: TButton;
+    JvHotKey1: TJvHotKey;
     procedure FormCreate(Sender: TObject);
-    procedure lblOkClick(Sender: TObject);
-    procedure lblCancelClick(Sender: TObject);
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure FormDestroy(Sender: TObject);
@@ -91,6 +93,13 @@ type
     procedure lblTwitterAccountClick(Sender: TObject);
     procedure lblAuthorsTwitterClick(Sender: TObject);
     procedure lblSoftwareTwitterClick(Sender: TObject);
+    procedure ToolButton1Click(Sender: TObject);
+    procedure Frame11btnCancelClick(Sender: TObject);
+    procedure Frame11btnOKClick(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure ControlList1BeforeDrawItem(AIndex: Integer; ACanvas: TCanvas;
+      ARect: TRect; AState: TOwnerDrawState);
   private
     { Private declarations }
     procedure WMNCHitTest(var Message: TWMNCHitTest); message WM_NCHITTEST;
@@ -110,7 +119,7 @@ implementation
 {$R *.dfm}
 
 uses menu,
-  msxml, ShellAPI;
+  msxml, ShellAPI, functions;
 
 const
   RELESASESCOUNT = 2;
@@ -207,11 +216,29 @@ begin
 
 end;
 
+procedure TfrmSetting.ControlList1BeforeDrawItem(AIndex: Integer;
+  ACanvas: TCanvas; ARect: TRect; AState: TOwnerDrawState);
+begin
+  lblSiteName.Caption := frmMenu.Settings.Sites[AIndex].Name;
+  lblSiteUrl.Caption := frmMenu.Settings.Sites[AIndex].Url;
+  VirtualImage1.ImageIndex := AIndex;
+end;
+
 procedure TfrmSetting.CreateParams(var Params: TCreateParams);
 begin
   inherited CreateParams(Params);
   // Params.Style:=Params.Style or WS_THICKFRAME;
   Params.WindowClass.Style := Params.WindowClass.Style or CS_DROPSHADOW;
+end;
+
+procedure TfrmSetting.Button1Click(Sender: TObject);
+begin
+  Close;
+end;
+
+procedure TfrmSetting.Button2Click(Sender: TObject);
+begin
+  Close;
 end;
 
 procedure TfrmSetting.cbbBrowsersChange(Sender: TObject);
@@ -232,6 +259,8 @@ begin
 end;
 
 procedure TfrmSetting.FormCreate(Sender: TObject);
+var
+  I: Integer;
 begin
   // TranslateComponent(Self);
 
@@ -245,10 +274,10 @@ begin
   BorderIcons := [];
   // GlassFrame.SheetOfGlass:=True;
 
-  SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) Or
-    WS_EX_LAYERED { or WS_EX_TRANSPARENT } or
-    WS_EX_TOOLWINDOW { and not WS_EX_APPWINDOW } );
-  SetLayeredWindowAttributes(Handle, 0, 225, LWA_ALPHA);
+//  SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) Or
+//    WS_EX_LAYERED { or WS_EX_TRANSPARENT } or
+//    WS_EX_TOOLWINDOW { and not WS_EX_APPWINDOW } );
+//  SetLayeredWindowAttributes(Handle, 0, 225, LWA_ALPHA);
 
   SetWindowPos(Handle, HWND_TOPMOST, Left, Top, Width, Height,
     SWP_NOMOVE or SWP_NOACTIVATE or SWP_NOSIZE);
@@ -264,6 +293,20 @@ begin
   webbrowserpath := TStringList.Create;
 
   ListWebBrowsers;
+
+  pnlEditSite.Align := alClient;
+
+  if Assigned(frmMenu.Settings) then
+  begin
+    ControlList1.ItemCount := frmMenu.Settings.Sites.Count;
+    SVGIconImageCollection1.ClearIcons;
+    for I := 0 to frmMenu.Settings.Sites.Count - 1 do
+    begin
+      SVGIconImageCollection1.LoadFromString(frmMenu.Settings.Sites[I].Icon, frmMenu.Settings.Sites[I].Name);
+    end;
+  end;
+
+  EnableNCShadow(Handle);
 end;
 
 function GetComputerNetName: string;
@@ -278,12 +321,6 @@ begin
     Result := ''
 end;
 
-procedure TfrmSetting.lblOkClick(Sender: TObject);
-begin
-
-  close;
-end;
-
 procedure TfrmSetting.lblSoftwareTwitterClick(Sender: TObject);
 begin
   shellexecute(GetDesktopWindow, 'OPEN', 'https://twitter.com/Codigobit', '',
@@ -294,6 +331,11 @@ procedure TfrmSetting.lblTwitterAccountClick(Sender: TObject);
 begin
   shellexecute(GetDesktopWindow, 'OPEN', 'https://twitter.com/Win8Menu', '', '',
     SW_SHOWNORMAL);
+end;
+
+procedure TfrmSetting.ToolButton1Click(Sender: TObject);
+begin
+  pnlEditSite.Visible := True;
 end;
 
 procedure TfrmSetting.FormDestroy(Sender: TObject);
@@ -311,6 +353,29 @@ begin
   Perform(WM_SYSCOMMAND, $F012, 0);
 end;
 
+procedure TfrmSetting.Frame11btnCancelClick(Sender: TObject);
+begin
+  pnlEditSite.Visible := False;
+end;
+
+procedure TfrmSetting.Frame11btnOKClick(Sender: TObject);
+begin
+  // Accept and close
+  frmMenu.Settings.AddSites(
+    Frame11.lblName.Text,
+    Frame11.lblURL.Text,
+    Frame11.lblAltURL.Text,
+    Frame11.svgIcon.SVG.Source,
+    Frame11.txtUserScript.Text,
+    Frame11.txtUserStyle.Text,
+    Frame11.ckUserScript.Enabled,
+    Frame11.ckUserStyle.Enabled,
+    Frame11.ckEnabled.Enabled,
+    0
+  );
+  pnlEditSite.Visible := False;
+end;
+
 procedure TfrmSetting.lblAppWebSiteClick(Sender: TObject);
 begin
   shellexecute(GetDesktopWindow, 'OPEN', 'http://apps.codigobit.info/Win8Menu',
@@ -321,11 +386,6 @@ procedure TfrmSetting.lblAuthorsTwitterClick(Sender: TObject);
 begin
   shellexecute(GetDesktopWindow, 'OPEN', 'https://twitter.com/vhanla', '', '',
     SW_SHOWNORMAL);
-end;
-
-procedure TfrmSetting.lblCancelClick(Sender: TObject);
-begin
-  close;
 end;
 
 procedure TfrmSetting.lblCheckNewVersionClick(Sender: TObject);
