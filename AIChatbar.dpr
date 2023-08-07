@@ -18,7 +18,8 @@ uses
   uBrowserCard in 'uBrowserCard.pas',
   uBrowserFrame in 'uBrowserFrame.pas' {BrowserFrame: TFrame},
   uChildForm in 'uChildForm.pas',
-  settingsHelper in 'settingsHelper.pas';
+  settingsHelper in 'settingsHelper.pas',
+  frameEditSite in 'frameEditSite.pas' {Frame1: TFrame};
 
 {$R *.res}
 
