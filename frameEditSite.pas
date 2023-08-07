@@ -22,6 +22,7 @@ type
     btnCancel: TButton;
     btnOK: TButton;
     openSVG: TOpenDialog;
+    lblUA: TLabeledEdit;
     procedure btnSearchSVGClick(Sender: TObject);
   private
     { Private declarations }
