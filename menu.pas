@@ -1,3 +1,8 @@
+{
+  KNOWN BUGS: Sometimes closing a site the CardPanel activecard property fails
+              and might occur that switching to another site doesn't work well
+              until you create (open) a new site
+}
 unit menu;
 
 interface
@@ -29,7 +34,7 @@ type
     imgChatGPT: TSkSvg;
     imgSettings: TSkSvg;
     pmCard: TPopupMenu;
-    pmCardClose: TMenuItem;
+    pmCardCloseSite: TMenuItem;
     Settings1: TMenuItem;
     imgClaude: TSkSvg;
     TrayIcon1: TTrayIcon;
@@ -51,7 +56,7 @@ type
     procedure imgSettingsClick(Sender: TObject);
     procedure imgShareClick(Sender: TObject);
     procedure pmCardPopup(Sender: TObject);
-    procedure pmCardCloseClick(Sender: TObject);
+    procedure pmCardCloseSiteClick(Sender: TObject);
     procedure imgChatGPTContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure imgShareContextPopup(Sender: TObject; MousePos: TPoint;
@@ -73,6 +78,7 @@ type
       var HotKey: TShortCut);
     procedure Sdfsd(Sender: TObject);
     procedure JvAppEvents1Activate(Sender: TObject);
+    procedure pmCardClose(Sender: TObject);
 //    procedure FormPaint(Sender: TObject);
   private
     { Private declarations }
@@ -84,6 +90,7 @@ type
     {$IFEND}
     FHookWndHandle: THandle;
     FHookMsg: Integer;
+    FFirstTimeBrowser: Boolean;
     procedure CreateParams(var Params: TCreateParams); override;
     procedure HideMenu(Sender: TObject);
     procedure RestoreRequest(var message: TMessage); message WM_USER + $1000;
@@ -249,7 +256,11 @@ procedure TfrmMenu.SiteContextPopup(Sender: TObject; MousePos: TPoint;
 begin
   if Sender is TSkSvg then
   begin
-    FCurrentPopupCardId := Settings.Sites[TSkSvg(Sender).Tag].Id;
+    //TODO needs better way for it to enable close site option
+    if not TSkSvg(Sender).Svg.GrayScale then
+      FCurrentPopupCardId := Settings.Sites[TSkSvg(Sender).Tag].Id
+    else
+      FCurrentPopupCardId := 0; // hard coded way to say, site not started
   end;
 end;
 
@@ -375,7 +386,8 @@ begin
   begin
     if Found then
     begin
-      if mainBrowser.CardPanel1.ActiveCard.Tag <> SiteID
+      if Assigned(mainBrowser.CardPanel1.ActiveCard) and
+      (mainBrowser.CardPanel1.ActiveCard.Tag <> SiteID)
       then
       begin
         mainBrowser.CardPanel1.ActiveCardIndex := I;
@@ -397,9 +409,13 @@ begin
     end
     else
     begin
-      mainBrowser.Height := Screen.WorkAreaRect.Height;
-      mainBrowser.Left := Screen.WorkAreaRect.Width - mainBrowser.Width;
-      mainBrowser.Top := Screen.WorkAreaRect.Top;
+      if FFirstTimeBrowser then
+      begin // use the predefined hard coded position mimicking the Windows Copilot location
+        FFirstTimeBrowser := False; // to avoid resetting the position on new calls so user keeps change position in this session
+        mainBrowser.Height := Screen.WorkAreaRect.Height;
+        mainBrowser.Left := Screen.WorkAreaRect.Width - mainBrowser.Width;
+        mainBrowser.Top := Screen.WorkAreaRect.Top;
+      end;
       mainBrowser.Visible := True;
       mainBrowser.CreateNewSite(SiteID, SiteURL);
       TSkSvg(Sender).Svg.GrayScale := False;
@@ -434,7 +450,10 @@ begin
   if GetForegroundWindow = mainBrowser.Handle then
   begin
     if mainBrowser.CardPanel1.CardCount > 0 then
-      TBrowserCard(mainBrowser.CardPanel1.ActiveCard).FocusBrowser;
+    begin
+      if Assigned(mainBrowser.CardPanel1.ActiveCard) then
+        TBrowserCard(mainBrowser.CardPanel1.ActiveCard).FocusBrowser;
+    end;
   end;
 end;
 
@@ -460,6 +479,7 @@ const
 var
   ReservedScreenArea: TRect;
 begin
+  FFirstTimeBrowser := True; // to use the preset browser position for the first call
   PopupWindowRect.Width := 0;
 //  SystemParametersInfo(SPI_SETDISPLAYDPI, 1, nil, 1);
   OnMenuArea := False;
@@ -929,7 +949,12 @@ begin
   FPopupMenuVisible := True;
 end;
 
-procedure TfrmMenu.pmCardCloseClick(Sender: TObject);
+procedure TfrmMenu.pmCardClose(Sender: TObject);
+begin
+  FPopupMenuVisible := False;
+end;
+
+procedure TfrmMenu.pmCardCloseSiteClick(Sender: TObject);
 var
   TempCard: tbrowsercard;
   I, J: Integer;
@@ -981,10 +1006,11 @@ end;
 
 procedure TfrmMenu.pmCardPopup(Sender: TObject);
 begin
+  FPopupMenuVisible := True;
   if FCurrentPopupCardId > 0 then
-    pmCardClose.Enabled := True
+    pmCardCloseSite.Enabled := True
   else
-    pmCardClose.Enabled := False;
+    pmCardCloseSite.Enabled := False;
 end;
 
 end.

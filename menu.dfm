@@ -2353,13 +2353,14 @@ object frmMenu: TfrmMenu
     Top = 400
   end
   object pmCard: TPopupMenu
+    OnClose = pmCardClose
     OnPopup = pmCardPopup
     Left = 256
     Top = 112
-    object pmCardClose: TMenuItem
+    object pmCardCloseSite: TMenuItem
       Caption = 'Close'
       Enabled = False
-      OnClick = pmCardCloseClick
+      OnClick = pmCardCloseSiteClick
     end
   end
   object TrayIcon1: TTrayIcon
