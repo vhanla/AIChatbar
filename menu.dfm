@@ -15,6 +15,7 @@ object frmMenu: TfrmMenu
   PopupMenu = pm1
   StyleElements = [seFont]
   OnClick = FormClick
+  OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
@@ -25,7 +26,11 @@ object frmMenu: TfrmMenu
     Top = 126
     Width = 48
     Height = 48
+    Hint = 'Bing GPT'
+    ParentShowHint = False
     PopupMenu = pmCard
+    ShowHint = True
+    Visible = False
     OnClick = imgShareClick
     OnContextPopup = imgShareContextPopup
     Svg.Source = 
@@ -354,6 +359,7 @@ object frmMenu: TfrmMenu
     Top = 180
     Width = 48
     Height = 48
+    Visible = False
     OnClick = imgMenuClick
     Svg.Source = 
       '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'#13#10'<!-- Cre' +
@@ -468,7 +474,11 @@ object frmMenu: TfrmMenu
     Top = 240
     Width = 48
     Height = 48
+    Hint = 'Bard'
+    ParentShowHint = False
     PopupMenu = pmCard
+    ShowHint = True
+    Visible = False
     OnClick = imgConnectClick
     OnContextPopup = imgConnectContextPopup
     Svg.Source = 
@@ -790,11 +800,15 @@ object frmMenu: TfrmMenu
   end
   object imgChatGPT: TSkSvg
     Tag = 1
-    Left = 16
+    Left = 8
     Top = 72
     Width = 48
     Height = 48
+    Hint = 'ChatGPT'
+    ParentShowHint = False
     PopupMenu = pmCard
+    ShowHint = True
+    Visible = False
     OnClick = imgChatGPTClick
     OnContextPopup = imgChatGPTContextPopup
     Svg.Source = 
@@ -1044,7 +1058,11 @@ object frmMenu: TfrmMenu
     Top = 304
     Width = 48
     Height = 48
+    Hint = 'YouChat'
+    ParentShowHint = False
     PopupMenu = pmCard
+    ShowHint = True
+    Visible = False
     OnClick = imgSettingsClick
     OnContextPopup = imgSettingsContextPopup
     Svg.Source = 
@@ -2212,6 +2230,10 @@ object frmMenu: TfrmMenu
     Top = 384
     Width = 48
     Height = 48
+    Hint = 'ClaudeAI'
+    ParentShowHint = False
+    ShowHint = True
+    Visible = False
     OnClick = imgClaudeClick
     OnContextPopup = imgClaudeContextPopup
     Svg.Source = 
@@ -2316,15 +2338,15 @@ object frmMenu: TfrmMenu
     Enabled = False
     Interval = 25
     OnTimer = tmrHideMenuTimer
-    Left = 568
-    Top = 184
+    Left = 592
+    Top = 152
   end
   object tmrShowMenu: TTimer
     Enabled = False
     Interval = 25
     OnTimer = tmrShowMenuTimer
-    Left = 568
-    Top = 232
+    Left = 592
+    Top = 224
   end
   object ImageList1: TImageList
     Left = 304
@@ -2345,5 +2367,17 @@ object frmMenu: TfrmMenu
     Visible = True
     Left = 368
     Top = 288
+  end
+  object JvApplicationHotKey1: TJvApplicationHotKey
+    HotKey = 49275
+    OnHotKey = JvApplicationHotKey1HotKey
+    OnHotKeyRegisterFailed = JvApplicationHotKey1HotKeyRegisterFailed
+    Left = 184
+    Top = 264
+  end
+  object JvAppEvents1: TJvAppEvents
+    OnActivate = JvAppEvents1Activate
+    Left = 440
+    Top = 360
   end
 end

@@ -9,10 +9,11 @@ uses
   Dialogs, jpeg, ExtCtrls, Menus, StdCtrls, registry,
   frmChatWebView, System.ImageList, Vcl.ImgList,
   AnyiQuack, AQPSystemTypesAnimations, uWVCoreWebView2Args,
-  Vcl.Imaging.pngimage, Skia, Skia.Vcl, Generics.Collections,
-  settingsHelper {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
+  Vcl.Imaging.pngimage, Skia, Skia.Vcl, Generics.Collections, Winapi.ShellAPI,
+  settingsHelper, JvComponentBase, JvAppHotKey, JvAppEvent {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
 
 type
+
   TfrmMenu = class(TForm)
     tmrMenu: TTimer;
     pm1: TPopupMenu;
@@ -32,7 +33,12 @@ type
     Settings1: TMenuItem;
     imgClaude: TSkSvg;
     TrayIcon1: TTrayIcon;
+    JvApplicationHotKey1: TJvApplicationHotKey;
+    JvAppEvents1: TJvAppEvents;
+
     procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+
     procedure tmrMenuTimer(Sender: TObject);
     procedure imgMenuClick(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
@@ -44,7 +50,6 @@ type
     procedure FormShow(Sender: TObject);
     procedure imgSettingsClick(Sender: TObject);
     procedure imgShareClick(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
     procedure pmCardPopup(Sender: TObject);
     procedure pmCardCloseClick(Sender: TObject);
     procedure imgChatGPTContextPopup(Sender: TObject; MousePos: TPoint;
@@ -62,6 +67,12 @@ type
     procedure FormClick(Sender: TObject);
     procedure pm1Popup(Sender: TObject);
     procedure pm1Close(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure JvApplicationHotKey1HotKey(Sender: TObject);
+    procedure JvApplicationHotKey1HotKeyRegisterFailed(Sender: TObject;
+      var HotKey: TShortCut);
+    procedure Sdfsd(Sender: TObject);
+    procedure JvAppEvents1Activate(Sender: TObject);
 //    procedure FormPaint(Sender: TObject);
   private
     { Private declarations }
@@ -71,17 +82,30 @@ type
     {$IFDEF EXPERIMENTAL}
       {$I experimental.object.inc}
     {$IFEND}
+    FHookWndHandle: THandle;
+    FHookMsg: Integer;
     procedure CreateParams(var Params: TCreateParams); override;
     procedure HideMenu(Sender: TObject);
     procedure RestoreRequest(var message: TMessage); message WM_USER + $1000;
     // restore after resolution change
     procedure WMDisplayChange(var message: TMessage); message WM_DISPLAYCHANGE;
+  protected
+    procedure WMShellHook(var Msg: TMessage);
+    procedure WndMethod(var Msg: TMessage);
+    function IsStarteMenuVisible: Boolean;
   public
     { Public declarations }
     Settings: TSettings;
+    Icons: TObjectList<TSkSvg>;
+    PopupWindowRect: TRect;
+    constructor Create(AOwner: TComponent); override;
     procedure buttonClick(btnID: Cardinal);
     procedure ShowMenuAnimation;
     procedure CreateNewCard(const aArgs : TCoreWebView2NewWindowRequestedEventArgs);
+    procedure CreateNewSite(Sender: TObject);
+    procedure SiteContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
+    procedure FocusCurrentBrowser;
     property OnMenuArea: Boolean read FOnMenuArea write FOnMenuArea;
   end;
 
@@ -103,7 +127,60 @@ uses
   settings,
   utils,
   uBrowserCard,
+  ActiveX,
   GDIPAPI, gdipobj, gdiputil;
+
+const
+//https://stackoverflow.com/a/22105803/537347 Windows 8 or newer only
+  IID_AppVisibility: TGUID = '{2246EA2D-CAEA-4444-A3C4-6DE827E44313}';
+  CLSID_AppVisibility: TGUID = '{7E5FE3D9-985F-4908-91F9-EE19F9FD1514}';
+
+type
+  MONITOR_APP_VISIBILITY = (
+    MAV_UNKNOWN = 0,
+    MAV_NO_APP_VISIBLE = 1,
+    MAV_APP_VISIBLE = 2
+  );
+
+// *********************************************************************//
+// Interface: IAppVisibilityEvents
+// Flags:     (0)
+// GUID:      {6584CE6B-7D82-49C2-89C9-C6BC02BA8C38}
+// *********************************************************************//
+  IAppVisibilityEvents = interface(IUnknown)
+    ['{6584CE6B-7D82-49C2-89C9-C6BC02BA8C38}']
+    function AppVisibilityOnMonitorChanged(hMonitor: HMONITOR;
+              previousMode: MONITOR_APP_VISIBILITY;
+              currentMode: MONITOR_APP_VISIBILITY):HRESULT; stdcall;
+    function LauncherVisibilityChange(currentVisibleState: BOOL): HRESULT; stdcall;
+  end;
+
+
+// *********************************************************************//
+// Interface: IAppVisibility
+// Flags:     (0)
+// GUID:      {2246EA2D-CAEA-4444-A3C4-6DE827E44313}
+// *********************************************************************//
+  IAppVisibility = interface(IUnknown)
+    ['{2246EA2D-CAEA-4444-A3C4-6DE827E44313}']
+    function GetAppVisibilityOnMonitor(monitor: HMONITOR; out pMode: MONITOR_APP_VISIBILITY): HRESULT; stdcall;
+    function IsLauncherVisible(out pfVisible: BOOL): HRESULT; stdcall;
+    function Advise(pCallBack: IAppVisibilityEvents; out pdwCookie: DWORD): HRESULT; stdcall;
+    function Unadvise(dwCookie: DWORD): HRESULT; stdcall;
+  end;
+var
+  StartMenuVis: IAppVisibility;
+
+function AccessibleChildren(paccContainer: Pointer; iChildStart: LONGINT;
+                             cChildren: LONGINT; out rgvarChildren: OleVariant;
+                             out pcObtained: LONGINT): HRESULT; stdcall;
+                             external 'OLEACC.DLL' name 'AccessibleChildren';
+
+function  RegisterShellHookWindow( hWnd : HWND ) : BOOL;    stdcall;
+  external user32 name 'RegisterShellHookWindow';
+function  DeregisterShellHookWindow( hWnd : HWND) : BOOL;  stdcall;
+  external user32 name 'DeregisterShellHookWindow';
+
 
 
 procedure TfrmMenu.RestoreRequest(var message: TMessage);
@@ -167,6 +244,15 @@ begin
     2000, 0, TAQ.Ease(etCircle, emInInverted));
 end;
 
+procedure TfrmMenu.SiteContextPopup(Sender: TObject; MousePos: TPoint;
+  var Handled: Boolean);
+begin
+  if Sender is TSkSvg then
+  begin
+    FCurrentPopupCardId := Settings.Sites[TSkSvg(Sender).Tag].Id;
+  end;
+end;
+
 procedure TfrmMenu.WMDisplayChange(var message: TMessage);
 begin
   // Resolution changed
@@ -178,6 +264,39 @@ begin
   imgSettings.Top := imgMenu.Top + 64 * 2;
   imgClaude.Top := imgMenu.Top + 64 * 3;
   inherited;
+end;
+
+procedure TfrmMenu.WMShellHook(var Msg: TMessage);
+begin
+  case Msg.WParam of
+    HSHELL_WINDOWCREATED, HSHELL_WINDOWDESTROYED:
+    begin
+      if IsStarteMenuVisible then
+      begin
+        ShowWindow(Handle, SW_SHOWNOACTIVATE);
+        if not OnMenuArea then
+          begin
+            OnMenuArea := True;
+            NewWidth := 54;
+            NewLeft := Screen.WorkAreaWidth - NewWidth +1;
+            NewAlphaBlend := MAXBYTE;
+            ShowMenuAnimation;
+          end;
+      end;
+    end;
+
+    HSHELL_WINDOWACTIVATED:
+    begin
+
+    end;
+
+  end;
+end;
+
+procedure TfrmMenu.WndMethod(var Msg: TMessage);
+begin
+  if Msg.Msg = FHookMsg then
+    WMShellHook(Msg);
 end;
 
 procedure TfrmMenu.HideMenu(Sender: TObject);
@@ -205,11 +324,87 @@ begin
   end;
 end;
 
+constructor TfrmMenu.Create(AOwner: TComponent);
+var
+  MyTaskbar: TAppBarData;
+begin
+  inherited;
+
+  FillChar(MyTaskbar, SizeOf(TAppBarData), 0);
+  MyTaskbar.cbSize := SizeOf(TAppBarData);
+  MyTaskbar.hWnd := Handle;
+  MyTaskbar.uCallbackMessage := WM_USER + 888;
+  MyTaskbar.uEdge := ABE_RIGHT;
+  MyTaskbar.rc := ClientRect;
+  SHAppBarMessage(ABM_NEW, MyTaskbar);
+  SHAppBarMessage(ABM_ACTIVATE, MyTaskbar);
+  SHAppBarMessage(ABM_SETPOS, MyTaskbar);
+
+  Application.ProcessMessages;
+end;
+
 procedure TfrmMenu.CreateNewCard(
   const aArgs: TCoreWebView2NewWindowRequestedEventArgs);
 begin
   if Assigned(mainBrowser) then
     mainBrowser.CreateNewCard(aArgs);
+end;
+
+
+procedure TfrmMenu.CreateNewSite(Sender: TObject);
+var
+  SiteID: Integer;
+  SiteURL: string;
+  I: Integer;
+  Found: Boolean;
+begin
+  Found := False;
+  SiteID := Settings.Sites[TSkSvg(Sender).Tag].Id;
+  SiteURL := Settings.Sites[TSkSvg(Sender).Tag].Url;
+  // check if there isn't already a card/tab with that site opened
+  for I := 0 to mainBrowser.CardPanel1.CardCount - 1 do
+  begin
+    if mainBrowser.CardPanel1.Cards[I].Tag = SiteID then
+    begin
+      Found := True;
+      Break;
+    end;
+  end;
+
+  if (Sender is TSkSvg) then
+  begin
+    if Found then
+    begin
+      if mainBrowser.CardPanel1.ActiveCard.Tag <> SiteID
+      then
+      begin
+        mainBrowser.CardPanel1.ActiveCardIndex := I;
+        mainBrowser.Visible := True;
+        SetForegroundWindow(mainBrowser.Handle);
+        FocusCurrentBrowser;
+      end
+      else
+      begin
+        if mainBrowser.Visible then
+          mainBrowser.Visible := False
+        else
+        begin
+          mainBrowser.Visible := True;
+          SetForegroundWindow(mainBrowser.Handle);
+          FocusCurrentBrowser;
+        end;
+      end;
+    end
+    else
+    begin
+      mainBrowser.Height := Screen.WorkAreaRect.Height;
+      mainBrowser.Left := Screen.WorkAreaRect.Width - mainBrowser.Width;
+      mainBrowser.Top := Screen.WorkAreaRect.Top;
+      mainBrowser.Visible := True;
+      mainBrowser.CreateNewSite(SiteID, SiteURL);
+      TSkSvg(Sender).Svg.GrayScale := False;
+    end;
+  end;
 end;
 
 procedure TfrmMenu.CreateParams(var Params: TCreateParams);
@@ -234,10 +429,29 @@ Begin
 
 End;
 
+procedure TfrmMenu.FocusCurrentBrowser;
+begin
+  if GetForegroundWindow = mainBrowser.Handle then
+  begin
+    if mainBrowser.CardPanel1.CardCount > 0 then
+      TBrowserCard(mainBrowser.CardPanel1.ActiveCard).FocusBrowser;
+  end;
+end;
+
 procedure TfrmMenu.FormClick(Sender: TObject);
 begin
   if frmChatWebView.mainBrowser.Visible then
     SetForegroundWindow(mainBrowser.Handle);
+end;
+
+procedure TfrmMenu.FormClose(Sender: TObject; var Action: TCloseAction);
+var
+  MyTaskbar: TAppBarData;
+begin
+  FillChar(MyTaskbar, SizeOf(TAppBarData), 0);
+  MyTaskbar.cbSize := SizeOf(TAppBarData);
+  MyTaskbar.hWnd := Handle;
+  SHAppBarMessage(ABM_REMOVE, MyTaskbar);
 end;
 
 procedure TfrmMenu.FormCreate(Sender: TObject);
@@ -246,6 +460,7 @@ const
 var
   ReservedScreenArea: TRect;
 begin
+  PopupWindowRect.Width := 0;
 //  SystemParametersInfo(SPI_SETDISPLAYDPI, 1, nil, 1);
   OnMenuArea := False;
   // SetPriorityClass(GetCurrentProcess, $4000);
@@ -259,6 +474,7 @@ begin
   Left := GetRightMost - 1;// + 10; // Screen.Width+10;//-48;
   BorderStyle := bsNone;
 
+  Icons := TObjectList<TSKSvg>.Create;
   // menu
   imgMenu.Left := 40;
   imgMenu.Top := Height div 2 - 24;
@@ -300,20 +516,62 @@ begin
   // save current workarea to restore later
   SystemParametersInfo(SPI_GETWORKAREA, 0, @OriginalWorkArea, 0);
   // now reserver screen area to work with
-  ReservedScreenArea := Rect(10, 0, Screen.Width - 10, Screen.Height);
-  // SystemParametersInfo(SPI_SETWORKAREA,0,@ReservedScreenArea,0);
+  ReservedScreenArea := Rect(0, 0, 60, Screen.Height);
+//  SystemParametersInfo(SPI_SETWORKAREA, 0,@ReservedScreenArea, SPIF_SENDCHANGE);
 
   Settings := TSettings.Create(ExtractFilePath(ParamStr(0))+'settings.db');
+
+  Settings.ReadSites;
+
+  // create each icon
+  var sitesCount := frmMenu.Settings.Sites.Count;
+  var sPos := Height div 2 - sitesCount div 2 * 64;
+
+  for var I := 0 to sitesCount - 1 do
+  begin
+
+    var vicon := TSkSvg.Create(Self);
+    vicon.Parent := Self;
+    vicon.Svg.Source := Settings.Sites[I].Icon;
+    vicon.Svg.GrayScale := True;
+    vicon.Tag := I;
+    vicon.Left := 4;
+    vicon.Top := sPos + 64*I;
+    vicon.Width := 48;
+    vicon.Height := 48;
+    vicon.Cursor := crHandPoint;
+    vicon.Hint := Settings.Sites[I].Name;
+    vicon.ShowHint := True;
+    vicon.OnClick := CreateNewSite;
+    vicon.OnContextPopup := SiteContextPopup;
+    vicon.PopupMenu := pmCard;
+    Icons.Add(vicon);
+  end;
+
+  // Register ourselves as shell message instance receiver
+  FHookWndHandle := AllocateHWnd(WndMethod);
+  FHookMsg := RegisterWindowMessage('SHELLHOOK'#0);
+  RegisterShellHookWindow(FHookWndHandle);
+
+  JvApplicationHotKey1.HotKey := TextToShortCut('Shift+Ctrl+Alt+F12');
+  JvApplicationHotKey1.Active := True;
 end;
 
 procedure TfrmMenu.FormDestroy(Sender: TObject);
 begin
+  DeregisterShellHookWindow(FHookWndHandle);
+  DeallocateHWnd(FHookWndHandle);
+
   {$IFDEF EXPERIMENTAL}
     {$I experimental.destroy.inc}
   {$IFEND}
+
+  Icons.Free;
+
   Settings.Free;
   // restore reserved screenarea
   SystemParametersInfo(SPI_SETWORKAREA, 0, @OriginalWorkArea, 0);
+
 end;
 
 //procedure TfrmMenu.FormPaint(Sender: TObject);
@@ -381,7 +639,8 @@ procedure TfrmMenu.imgMenuClick(Sender: TObject);
 var
   winrect: TRect;
 begin
-  SendMessage(Handle, WM_SYSCOMMAND, SC_TASKLIST, 0);
+  if not IsStarteMenuVisible then
+    SendMessage(Handle, WM_SYSCOMMAND, SC_TASKLIST, 0);
 end;
 
 procedure TfrmMenu.Exit1Click(Sender: TObject);
@@ -603,6 +862,63 @@ begin
   FCurrentPopupCardId := mainBrowser.BingID;
 end;
 
+function TfrmMenu.IsStarteMenuVisible: Boolean;
+var
+  startMenuOn: BOOL;
+begin
+  startMenuOn := False;
+
+  var res := CoCreateInstance(CLSID_AppVisibility, nil, CLSCTX_ALL, IID_AppVisibility, StartMenuVis);
+
+  if Succeeded(res) then
+  begin
+    if Succeeded(StartMenuVis.IsLauncherVisible(startMenuOn)) then
+    begin
+
+    end;
+  end;
+
+  Result := startMenuOn;
+end;
+
+procedure TfrmMenu.Sdfsd(Sender: TObject);
+begin
+  FocusCurrentBrowser;
+end;
+
+procedure TfrmMenu.JvAppEvents1Activate(Sender: TObject);
+begin
+  FocusCurrentBrowser;
+end;
+
+procedure TfrmMenu.JvApplicationHotKey1HotKey(Sender: TObject);
+begin
+  if Assigned(mainBrowser) then
+  begin
+    if mainBrowser.Visible then
+    begin
+      if GetForegroundWindow <> mainBrowser.Handle then
+      begin
+        SetForegroundWindow(mainBrowser.Handle);
+        FocusCurrentBrowser;
+      end
+      else
+        mainBrowser.Hide;
+    end
+    else
+    begin
+      mainBrowser.Show;
+      FocusCurrentBrowser;
+    end;
+  end;
+end;
+
+procedure TfrmMenu.JvApplicationHotKey1HotKeyRegisterFailed(Sender: TObject;
+  var HotKey: TShortCut);
+begin
+  ShowMessage('error');
+end;
+
 procedure TfrmMenu.pm1Close(Sender: TObject);
 begin
   FPopupMenuVisible := False;
@@ -616,17 +932,28 @@ end;
 procedure TfrmMenu.pmCardCloseClick(Sender: TObject);
 var
   TempCard: tbrowsercard;
-  I: Integer;
+  I, J: Integer;
 begin
   for I := 0 to mainBrowser.CardPanel1.CardCount - 1 do
   begin
     if mainBrowser.CardPanel1.Cards[I].Tag = FCurrentPopupCardId then
     begin
-
+      for J := 0 to Icons.Count - 1 do
+      begin
+        if Settings.Sites[Icons[J].Tag].Id = FCurrentPopupCardId then
+        begin
+          Icons[J].Svg.GrayScale := True;
+        end;
+      end;
+      TempCard := TBrowserCard(mainBrowser.CardPanel1.Cards[I]);
+      TempCard.Free;
+      if mainBrowser.CardPanel1.CardCount = 0 then
+        mainBrowser.Visible := False;
+      Break;
     end;
   end;
 
-  if FCurrentPopupCardId = mainBrowser.ChatGPTID then
+{  if FCurrentPopupCardId = mainBrowser.ChatGPTID then
   begin
      TempCard := TBrowserCard(mainBrowser.CardPanel1.Cards[pred(mainBrowser.ChatGPTID)]);
      TempCard.Free;
@@ -649,7 +976,7 @@ begin
      TempCard := TBrowserCard(mainBrowser.CardPanel1.Cards[pred(mainBrowser.YouID)]);
      TempCard.Free;
      mainBrowser.YouID := 0;
-  end
+  end}
 end;
 
 procedure TfrmMenu.pmCardPopup(Sender: TObject);
