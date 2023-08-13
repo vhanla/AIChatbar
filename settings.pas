@@ -110,7 +110,7 @@ implementation
 {$R *.dfm}
 
 uses menu,
-  msxml, ShellAPI, functions, Vcl.Menus;
+  msxml, ShellAPI, functions, Vcl.Menus, Net.HttpClient, System.JSON;
 
 const
   RELESASESCOUNT = 2;
@@ -232,13 +232,21 @@ begin
   fTempHotkey := JvGlobalHotKey.HotKey;
   frmMenu.JvApplicationHotKey1.WindowsKey := chkWinKey.Checked;
   frmMenu.JvApplicationHotKey1.HotKey := JvGlobalHotKey.HotKey;
+  frmMenu.JvApplicationHotKey1.Active := True;
   frmMenu.Settings.SaveSettings;
   Close;
 end;
 
 procedure TfrmSetting.cbbPositionChange(Sender: TObject);
 begin
-  frmMenu.Settings.BarPosition := cbbPosition.ItemIndex;
+  if (cbbPosition.ItemIndex = 1) or (cbbPosition.ItemIndex = 3)  then
+  begin
+    MessageDlg('Top and Bottom are not available, yet.', TMsgDlgType.mtError, [TMsgDlgBtn.mbOK], 0);
+    cbbPosition.ItemIndex := ABE_RIGHT;
+    frmMenu.Settings.BarPosition := ABE_RIGHT;
+  end
+  else
+    frmMenu.Settings.BarPosition := cbbPosition.ItemIndex;
 end;
 
 procedure TfrmSetting.chkAutoHideClick(Sender: TObject);
@@ -249,6 +257,7 @@ end;
 procedure TfrmSetting.chkAutoStartClick(Sender: TObject);
 begin
   frmMenu.Settings.AutoStart := chkAutoStart.Checked;
+  SetAutostartEnabled('AIChatbar', chkAutoStart.Checked);
 end;
 
 procedure TfrmSetting.chkClipImgClick(Sender: TObject);
@@ -264,6 +273,7 @@ end;
 procedure TfrmSetting.chkDarkModeClick(Sender: TObject);
 begin
   frmMenu.Settings.DarkMode := chkDarkMode.Checked;
+  frmMenu.SetDarkMode(chkDarkMode.Checked);
 end;
 
 procedure TfrmSetting.chkFSOff3DClick(Sender: TObject);
@@ -316,6 +326,7 @@ end;
 procedure TfrmSetting.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   JvGlobalHotKey.HotKey := fTempHotkey;
+
   frmMenu.JvApplicationHotKey1.Active := True;
 end;
 
