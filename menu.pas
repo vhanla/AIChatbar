@@ -204,7 +204,7 @@ begin
       procedure(Sender: TObject)
       begin
         // if timer for icons animations is not enabled
-        if not tmrShowMenu.Enabled then
+        {if not tmrShowMenu.Enabled then
         begin
           tmrShowMenu.Enabled := True;
           tmrHideMenu.Enabled := False;
@@ -214,7 +214,7 @@ begin
           tmrShowMenu.Enabled := False;
           tmrHideMenu.Enabled := True;
           ShowWindow(Handle, SW_HIDE);
-        end;
+        end;}
       end
       );
 
@@ -492,6 +492,7 @@ begin
   Settings := TSettings.Create(ExtractFilePath(ParamStr(0))+'settings.db');
 
   Settings.ReadSites;
+  Settings.LoadSettings;
 
   // create each icon
   var sitesCount := frmMenu.Settings.Sites.Count;
@@ -523,7 +524,8 @@ begin
   FHookMsg := RegisterWindowMessage('SHELLHOOK'#0);
   RegisterShellHookWindow(FHookWndHandle);
 
-  JvApplicationHotKey1.HotKey := TextToShortCut('Shift+Ctrl+Alt+F12');
+  JvApplicationHotKey1.HotKey := TextToShortCut(Settings.GlobalHotkey);
+  JvApplicationHotKey1.WindowsKey := Settings.RequireWinKey;
   JvApplicationHotKey1.Active := True;
 end;
 
@@ -574,7 +576,7 @@ begin
   end;
 
   // verificamos el borde
-  if (pos.X >= GetRightMost - 1 - frmSetting.seMenuHotArea.Value)
+  if (pos.X >= GetRightMost - 1)
   then
   begin
     ShowWindow(Handle, SW_SHOWNOACTIVATE);
