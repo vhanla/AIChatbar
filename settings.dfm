@@ -129,7 +129,7 @@ object frmSetting: TfrmSetting
     Top = 62
     Width = 641
     Height = 363
-    ActivePage = TabSheet5
+    ActivePage = TabSheet6
     Anchors = [akLeft, akTop, akRight, akBottom]
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -283,9 +283,13 @@ object frmSetting: TfrmSetting
         Top = 20
         Width = 268
         Height = 17
+        Hint = 'Not yet implemented, auto hide by now'
         Caption = 'Auto hide AI chat bar'
         Color = 2743985
+        Enabled = False
         ParentColor = False
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 0
         OnClick = chkAutoHideClick
       end
@@ -362,6 +366,7 @@ object frmSetting: TfrmSetting
           Top = 63
           Width = 233
           Height = 21
+          ItemIndex = 2
           TabOrder = 2
           Text = 'RIght'
           OnChange = cbbPositionChange
@@ -376,6 +381,7 @@ object frmSetting: TfrmSetting
           Top = 113
           Width = 233
           Height = 21
+          Enabled = False
           TabOrder = 3
         end
         object chkProxy: TCheckBox
@@ -383,9 +389,13 @@ object frmSetting: TfrmSetting
           Top = 90
           Width = 185
           Height = 17
+          Hint = 'Not yet implemented.'
           Caption = 'Proxy (host:port)'
           Color = 2743985
+          Enabled = False
           ParentColor = False
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 4
           OnClick = chkProxyClick
         end
@@ -396,6 +406,7 @@ object frmSetting: TfrmSetting
           Height = 17
           Caption = 'Dark Mode'
           Color = 2743985
+          Enabled = False
           ParentColor = False
           TabOrder = 5
           OnClick = chkDarkModeClick
@@ -2744,13 +2755,13 @@ object frmSetting: TfrmSetting
         Width = 437
         Height = 182
         Caption = 
-          'AI Chatbar for Windows 10/11 v1.2. '#13#10' Description: Tool to inter' +
-          'act withAI chat bots.'#13#10' Author: Victor Alberto Gil  <vhanla> htt' +
-          'ps://codigobit.net'#13#10#13#10' Copyright Codigobit - All rights reserved' +
-          '.'#13#10#13#10'Part of the content included comes from:'#13#10' '#13#10#13#10#13#10'DISCLAIMER' +
-          ':'#13#10'USE IT AT YOUR OWN RISK, ANY KIND OF DAMAGE TO YOUR COMPUTER,' +
-          ' YOUR WIFE, '#13#10'YOUR PETS IS NOT THE AUTHOR'#39'S RESPONSIBILITY.'#13#10'Win' +
-          'dows is a registered trademark to Microsoft Corporation.'
+          'AI Chatbar for Windows 10/11 v1.0.0. '#13#10' Description: Tool to int' +
+          'eract withAI chat bots.'#13#10' Author: Victor Alberto Gil  <vhanla> h' +
+          'ttps://codigobit.net'#13#10#13#10' Copyright Codigobit - All rights reserv' +
+          'ed.'#13#10#13#10'Part of the content included comes from:'#13#10' '#13#10#13#10#13#10'DISCLAIM' +
+          'ER:'#13#10'USE IT AT YOUR OWN RISK, ANY KIND OF DAMAGE TO YOUR COMPUTE' +
+          'R, YOUR WIFE, '#13#10'YOUR PETS IS NOT THE AUTHOR'#39'S RESPONSIBILITY.'#13#10'W' +
+          'indows is a registered trademark to Microsoft Corporation.'
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -2880,7 +2891,6 @@ object frmSetting: TfrmSetting
     Top = 446
     Width = 530
     Height = 360
-    Caption = 'Panel1'
     Padding.Top = 8
     TabOrder = 1
     Visible = False
