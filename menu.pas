@@ -17,6 +17,9 @@ uses
   Vcl.Imaging.pngimage, Skia, Skia.Vcl, Generics.Collections, Winapi.ShellAPI,
   settingsHelper, JvComponentBase, JvAppHotKey, JvAppEvent {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
 
+const
+  APP_VERSION = '1.0.0';
+
 type
 
   TfrmMenu = class(TForm)
@@ -58,6 +61,8 @@ type
       var HotKey: TShortCut);
     procedure JvAppEvents1Activate(Sender: TObject);
     procedure pmCardClose(Sender: TObject);
+    procedure FormMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
 //    procedure FormPaint(Sender: TObject);
   private
     { Private declarations }
@@ -92,6 +97,7 @@ type
     procedure SiteContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure FocusCurrentBrowser;
+    procedure SetDarkMode(Enable: Boolean = True);
     property OnMenuArea: Boolean read FOnMenuArea write FOnMenuArea;
   end;
 
@@ -114,6 +120,7 @@ uses
   utils,
   uBrowserCard,
   ActiveX,
+  Vcl.Themes,
   GDIPAPI, gdipobj, gdiputil;
 
 const
@@ -175,6 +182,17 @@ begin
   frmMenu.Show;
 end;
 
+procedure TfrmMenu.SetDarkMode(Enable: Boolean);
+begin
+{  if Enable then
+  begin
+    if TStyleManager.IsValidStyle('Windows11_Polar_Dark.vsf') then
+      TStyleManager.TrySetStyle('Windows11 Polar Dark')
+  end
+  else
+    TStyleManager.TrySetStyle('Windows');}
+end;
+
 procedure TfrmMenu.Settings1Click(Sender: TObject);
 begin
   frmSetting.Show;
@@ -202,6 +220,8 @@ begin
       250, 0, TAQ.Ease(etBack, emInSnake),
       procedure(Sender: TObject)
       begin
+        if NewWidth < 54 then
+          ShowWindow(Handle, SW_HIDE);
         // if timer for icons animations is not enabled
         {if not tmrShowMenu.Enabled then
         begin
@@ -380,7 +400,10 @@ begin
       begin // use the predefined hard coded position mimicking the Windows Copilot location
         FFirstTimeBrowser := False; // to avoid resetting the position on new calls so user keeps change position in this session
         mainBrowser.Height := Screen.WorkAreaRect.Height;
-        mainBrowser.Left := Screen.WorkAreaRect.Width - mainBrowser.Width;
+        if Settings.BarPosition = ABE_LEFT then
+          mainBrowser.Left := Screen.WorkAreaRect.Left
+        else
+          mainBrowser.Left := Screen.WorkAreaRect.Width - mainBrowser.Width;
         mainBrowser.Top := Screen.WorkAreaRect.Top;
       end;
       mainBrowser.Visible := True;
@@ -429,8 +452,11 @@ end;
 
 procedure TfrmMenu.FormClick(Sender: TObject);
 begin
-  if frmChatWebView.mainBrowser.Visible then
-    SetForegroundWindow(mainBrowser.Handle);
+  if Assigned(mainBrowser) then
+  begin
+    if mainBrowser.Visible then
+      SetForegroundWindow(mainBrowser.Handle);
+  end;
 end;
 
 procedure TfrmMenu.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -548,6 +574,16 @@ begin
 
 end;
 
+procedure TfrmMenu.FormMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  // TODO: as of now we assume right click is the context menu, needs fix for left hand users mouse settings
+  if Button = TMouseButton.mbRight  then
+  begin
+    PopupMenu.Popup(Left + X, Top + Y);
+  end;
+end;
+
 //procedure TfrmMenu.FormPaint(Sender: TObject);
 //begin
 //  if TaskbarAccented then
@@ -568,8 +604,8 @@ var
   pos: TPoint;
   TypesAniPlugin: TAQPSystemTypesAnimations;
 begin
-  if DetectFullScreen3D then Exit;
-  if DetectFullScreenApp(GetForegroundWindow) then Exit;
+  if Settings.DisableOnFullScreenDirectX and DetectFullScreen3D then Exit;
+  if Settings.DisableOnFullScreen and DetectFullScreenApp(GetForegroundWindow) then Exit;
   if FPopupMenuVisible then Exit;
 
   try
@@ -578,32 +614,71 @@ begin
   end;
 
   // verificamos el borde
-  if (pos.X >= GetRightMost - 1)
-  then
+  if (GetAsyncKeyState(VK_LBUTTON) = 0) and (GetAsyncKeyState(VK_RBUTTON) = 0) then
   begin
-    ShowWindow(Handle, SW_SHOWNOACTIVATE);
-    // si no se está presionando el botón izquierdo del mouse
-    if (GetAsyncKeyState(VK_LBUTTON) = 0) then
-    begin
-      if not OnMenuArea then
+    case Settings.BarPosition of
+      ABE_LEFT:
       begin
-        OnMenuArea := True;
-        NewWidth := 54;
-        NewLeft := Screen.WorkAreaWidth - NewWidth +1;
-        NewAlphaBlend := MAXBYTE;
-        ShowMenuAnimation;
+        if (pos.X <= GetLeftMost + 1) then
+        begin
+          ShowWindow(Handle, SW_SHOWNOACTIVATE);
+          if not OnMenuArea then
+          begin
+            OnMenuArea := True;
+            NewWidth := 54;
+            NewLeft := GetLeftMost - 1;
+            NewAlphaBlend := MAXBYTE;
+            ShowMenuAnimation;
+          end;
+        end
+        else if (pos.X > Left + Width) and (tmrHideMenu.Enabled = False) then
+        begin
+          if OnMenuArea then
+          begin
+            OnMenuArea := False;
+            NewWidth := 1;
+            NewLeft := GetLeftMost;
+            NewAlphaBlend := 0;
+            ShowMenuAnimation;
+          end;
+        end;
+
       end;
-    end;
-  end
-  else if (pos.X < Left) and (tmrHideMenu.Enabled = False) then
-  begin
-    if OnMenuArea then
-    begin
-      OnMenuArea := False;
-      NewWidth := 1;
-      NewLeft := Screen.WorkAreaWidth - NewWidth;
-      NewAlphaBlend := 0;
-      ShowMenuAnimation;
+      ABE_TOP:
+      begin
+
+      end;
+      ABE_RIGHT:
+      begin
+        if (pos.X >= GetRightMost - 1) then
+        begin
+          ShowWindow(Handle, SW_SHOWNOACTIVATE);
+          if not OnMenuArea then
+          begin
+            OnMenuArea := True;
+            NewWidth := 54;
+            NewLeft := Screen.WorkAreaWidth - NewWidth +1;
+            NewAlphaBlend := MAXBYTE;
+            ShowMenuAnimation;
+          end;
+        end
+        else if (pos.X < Left) and (tmrHideMenu.Enabled = False) then
+        begin
+          if OnMenuArea then
+          begin
+            OnMenuArea := False;
+            NewWidth := 1;
+            NewLeft := Screen.WorkAreaWidth - NewWidth;
+            NewAlphaBlend := 0;
+            ShowMenuAnimation;
+          end;
+        end;
+
+      end;
+      ABE_BOTTOM:
+      begin
+
+      end;
     end;
   end;
 
@@ -741,8 +816,13 @@ end;
 
 procedure TfrmMenu.JvApplicationHotKey1HotKeyRegisterFailed(Sender: TObject;
   var HotKey: TShortCut);
+var
+  win: string;
 begin
-  ShowMessage('error');
+  win := '';
+  if Settings.RequireWinKey then win := 'Win+';
+
+  ShowMessage(Format('There was an error assigning this hotkey: %s%s '#13#10'It might be in use by other program or reserved by the OS.', [win, ShortCutToText(HotKey)]));
 end;
 
 procedure TfrmMenu.pm1Close(Sender: TObject);

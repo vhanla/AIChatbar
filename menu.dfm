@@ -18,6 +18,7 @@ object frmMenu: TfrmMenu
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnMouseDown = FormMouseDown
   OnShow = FormShow
   TextHeight = 13
   object imgMenu: TSkSvg
