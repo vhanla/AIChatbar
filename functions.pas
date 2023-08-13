@@ -40,7 +40,14 @@ function BlendColors(Col1, Col2: TColor; A: Byte): TColor;
 function CreateSolidBrushWithAlpha(Color: TColor; Alpha: Byte = $FF): HBRUSH;
 function GetRAMUsage: Int64;
 
+function IsAutostartEnabled(const AppName: string): Boolean;
+procedure SetAutostartEnabled(const AppName: string; Enable: Boolean);
+
 implementation
+
+const
+  RegKey_Run = 'Software\Microsoft\Windows\CurrentVersion\Run';
+
 
 type
   AccentPolicy = packed record
@@ -637,6 +644,42 @@ function CreateSolidBrushWithAlpha(Color: TColor; Alpha: Byte = $FF): HBRUSH;
     Result := 0;
     if GetProcessMemoryInfo(GetCurrentProcess, @pmc, SizeOf(pmc)) then
       Result := pmc.WorkingSetSize;
+  end;
+
+
+  function IsAutostartEnabled(const AppName: string): Boolean;
+  var
+    Reg: TRegistry;
+  begin
+    Reg := TRegistry.Create;
+    try
+      Reg.RootKey := HKEY_CURRENT_USER;
+      Result := Reg.OpenKeyReadOnly(RegKey_Run) and Reg.ValueExists(AppName);
+    finally
+      Reg.Free;
+    end;
+  end;
+
+  procedure SetAutostartEnabled(const AppName: string; Enable: Boolean);
+  var
+    Reg: TRegistry;
+  begin
+    Reg := TRegistry.Create;
+    try
+      Reg.RootKey := HKEY_CURRENT_USER;
+      if Enable then
+      begin
+        if Reg.OpenKey(RegKey_Run, True) then
+          Reg.WriteString(AppName, ParamStr(0));
+      end
+      else
+      begin
+        if Reg.OpenKey(RegKey_Run, False) then
+          Reg.DeleteValue(AppName);
+      end;
+    finally
+      Reg.Free;
+    end;
   end;
 
 end.
