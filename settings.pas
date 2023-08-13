@@ -453,7 +453,7 @@ end;
 
 procedure TfrmSetting.lblAppWebSiteClick(Sender: TObject);
 begin
-  shellexecute(GetDesktopWindow, 'OPEN', 'http://apps.codigobit.info/Win8Menu',
+  shellexecute(GetDesktopWindow, 'OPEN', 'https://codigobit.net/AIChatbar',
     '', '', SW_SHOWNORMAL);
 end;
 
