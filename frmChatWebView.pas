@@ -1,4 +1,4 @@
-unit frmChatWebView;
+﻿unit frmChatWebView;
 
 interface
 
@@ -7,7 +7,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.WinXPanels,
-  uWVLoader, uWVCoreWebView2Args, JvComponentBase, JvAppEvent {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
+  uWVLoader, uWVCoreWebView2Args, JvComponentBase, JvAppEvent, Vcl.StdCtrls {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
 
 const
   WV_INITIALIZED = WM_APP + $100;
@@ -19,6 +19,7 @@ type
     Panel1: TPanel;
     Timer1: TTimer;
     tmrRamUsage: TTimer;
+    lblPin: TLabel;
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormPaint(Sender: TObject);
@@ -27,6 +28,7 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure Timer1Timer(Sender: TObject);
     procedure tmrRamUsageTimer(Sender: TObject);
+    procedure lblPinClick(Sender: TObject);
   private
     { Private declarations }
     FBingID: Cardinal;
@@ -151,6 +153,22 @@ begin
 
   Inc(FLastCardID);
   Result := FLastCardID;
+end;
+
+procedure TmainBrowser.lblPinClick(Sender: TObject);
+begin
+  if lblPin.Caption = '' then
+  begin
+    //pin
+    lblPin.Caption := '';
+    Self.FormStyle := fsStayOnTop;
+  end
+  else
+  begin
+    //unpin
+    lblPin.Caption := '';
+    Self.FormStyle := fsNormal;
+  end;
 end;
 
 procedure TmainBrowser.Panel1MouseDown(Sender: TObject; Button: TMouseButton;

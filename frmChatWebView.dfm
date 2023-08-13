@@ -45,6 +45,25 @@ object mainBrowser: TmainBrowser
     Caption = 'Panel1'
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
+    DesignSize = (
+      509
+      20)
+    object lblPin: TLabel
+      Left = 424
+      Top = 8
+      Width = 12
+      Height = 12
+      Cursor = crHandPoint
+      Anchors = [akTop, akRight]
+      Caption = #59456
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'Segoe MDL2 Assets'
+      Font.Style = []
+      ParentFont = False
+      OnClick = lblPinClick
+    end
   end
   object Timer1: TTimer
     Interval = 100
