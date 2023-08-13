@@ -5,7 +5,7 @@ interface
 uses
   FireDAC.Phys.SQLite, Generics.Collections, Classes, SysUtils, JSON,
   FireDAC.Comp.Client, FireDAC.Stan.Param, FireDAC.Stan.Error,
-  FireDAC.Stan.Intf, FireDAC.Stan.Option,
+  FireDAC.Stan.Intf, FireDAC.Stan.Option, Winapi.ShellAPI,
   FireDAC.UI.Intf, FireDAC.Phys.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool,
   FireDAC.Stan.Async, FireDAC.Phys, FireDAC.VCLUI.Wait, FireDAC.DatS,
   FireDAC.DApt.Intf, FireDAC.DApt, FireDAC.Comp.DataSet;
@@ -44,6 +44,23 @@ type
   private
     FDB: TFDConnection;
     FSites: TObjectList<TSite>;
+    // app settings
+    FSettingsPath: string;
+    FDatabaseName: string;
+    FInifileName: string;
+
+    FAutoHide: Boolean;
+    FAutoStart: Boolean;
+    FDetectClipboardText: Boolean;
+    FDetectClipboardImage: Boolean;
+    FDisableOnFullScreen: Boolean;
+    FDisableOnFullScreenDirectX: Boolean;
+    FGlobalHotkey: string;
+    FRequireWinkey: Boolean;
+    FProxy: string;
+    FBarPosition: Integer; //ABE_RIGHT
+    FDarkMode: Boolean;
+
   public
     procedure CreateTables;
     constructor Create(const settingsPath: string);
@@ -53,12 +70,29 @@ type
       uscriptOn, ustyleOn, enabled: Boolean; position: Integer; const UA: string);
 
     procedure ReadSites;
+    procedure SaveSettings;
+    procedure LoadSettings;
 
     property DB: TFDConnection read FDB;
     property Sites: TObjectList<TSite> read FSites write FSites;
+
+    property AutoHide: Boolean read FAutoHide write FAutoHide;
+    property AutoStart: Boolean read FAutoStart write FAutoStart;
+    property DetectClipboardText: Boolean read FDetectClipboardText write FDetectClipboardText;
+    property DetectClipboardImage: Boolean read FDetectClipboardImage write FDetectClipboardImage;
+    property DisableOnFullScreen: Boolean read FDisableOnFullScreen write FDisableOnFullScreen;
+    property DisableOnFullScreenDirectX: Boolean read FDisableOnFullScreenDirectX write FDisableOnFullScreenDirectX;
+    property GlobalHotkey: string read FGlobalHotkey write FGlobalHotkey;
+    property RequireWinKey: Boolean read FRequireWinkey write FRequireWinkey;
+    property Proxy: string read FProxy write FProxy;
+    property BarPosition: Integer read FBarPosition write FBarPosition;
+    property DarkMode: Boolean read FDarkMode write FDarkMode;
   end;
 
 implementation
+
+uses
+  System.IniFiles;
 
 { TSettings }
 
@@ -99,6 +133,10 @@ constructor TSettings.Create(const settingsPath: string);
 var
   FileInfo: TSearchRec;
 begin
+  FSettingsPath := ExtractFilePath(settingsPath);
+  FDatabaseName := ExtractFileName(settingsPath);
+  FInifileName := StringReplace(FDatabaseName, ExtractFileExt(FDatabaseName), '.ini', [rfIgnoreCase]);
+
   FDB := TFDConnection.Create(nil);
   FDB.Params.DriverID := 'SQLite';
   FDB.Params.Database := settingsPath;
@@ -145,6 +183,28 @@ begin
   FDB.Free;
 end;
 
+procedure TSettings.LoadSettings;
+var
+  ini: TIniFile;
+begin
+  ini := TIniFile.Create(FSettingsPath + FInifileName);
+  try
+    FAutoHide := ini.ReadBool('settings', 'autohide', True);
+    FAutoStart := ini.ReadBool('settings', 'autostart', False);
+    FDetectClipboardText := ini.ReadBool('settings', 'cliptext', False);
+    FDetectClipboardImage := ini.ReadBool('settings', 'clipimg', False);
+    FDisableOnFullScreen := ini.ReadBool('settings', 'notonfs', True);
+    FDisableOnFullScreenDirectX := ini.ReadBool('settings', 'notonfs3d', True);
+    FGlobalHotkey := ini.ReadString('settings', 'hotkey', '');
+    FRequireWinkey := ini.ReadBool('settings', 'requirewinkey', False);
+    FProxy := ini.ReadString('settings', 'proxy', 'localhost:8080');
+    FBarPosition := ini.ReadInteger('settings', 'position', ABE_RIGHT);
+    FDarkMode := ini.ReadBool('settings', 'darkmode', True);
+  finally
+    ini.Free;
+  end;
+end;
+
 procedure TSettings.ReadSites;
 var
   q: TFDQuery;
@@ -183,6 +243,28 @@ begin
     end;
   finally
     q.Free;
+  end;
+end;
+
+procedure TSettings.SaveSettings;
+var
+  ini: TIniFile;
+begin
+  ini := TIniFile.Create(FSettingsPath + FInifileName);
+  try
+    ini.WriteBool('settings', 'autohide', FAutoHide);
+    ini.WriteBool('settings', 'autostart', FAutoStart);
+    ini.WriteBool('settings', 'cliptext', FDetectClipboardText);
+    ini.WriteBool('settings', 'clipimg', FDetectClipboardImage);
+    ini.WriteBool('settings', 'notonfs', FDisableOnFullScreen);
+    ini.WriteBool('settings', 'notonfs3d', FDisableOnFullScreenDirectX);
+    ini.WriteString('settings', 'hotkey', FGlobalHotkey);
+    ini.WriteBool('settings', 'requirewinkey', FRequireWinkey);
+    ini.WriteString('settings', 'proxy', FProxy);
+    ini.WriteInteger('settings', 'position', FBarPosition);
+    ini.WriteBool('settings', 'darkmode', FDarkMode);
+  finally
+    ini.Free;
   end;
 end;
 
