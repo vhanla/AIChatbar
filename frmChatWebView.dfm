@@ -34,8 +34,6 @@ object mainBrowser: TmainBrowser
     Align = alClient
     Caption = 'CardPanel1'
     TabOrder = 0
-    ExplicitTop = 33
-    ExplicitHeight = 695
   end
   object Panel1: TPanel
     Left = 0
@@ -47,27 +45,6 @@ object mainBrowser: TmainBrowser
     Caption = 'Panel1'
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    object UWPQuickButton1: TUWPQuickButton
-      AlignWithMargins = True
-      Left = 484
-      Top = 3
-      Width = 16
-      Height = 14
-      Margins.Right = 9
-      CustomBackColor.Enabled = False
-      CustomBackColor.Color = clBlack
-      CustomBackColor.LightColor = 13619151
-      CustomBackColor.DarkColor = 3947580
-      Caption = #55357#56524
-      Align = alRight
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -17
-      Font.Name = 'Segoe MDL2 Assets'
-      Font.Style = []
-      ParentFont = False
-      ExplicitHeight = 12
-    end
   end
   object Timer1: TTimer
     Interval = 100

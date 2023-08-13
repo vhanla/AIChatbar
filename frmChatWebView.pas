@@ -7,7 +7,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.WinXPanels,
-  uWVLoader, uWVCoreWebView2Args, UWP.QuickButton, JvComponentBase, JvAppEvent {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
+  uWVLoader, uWVCoreWebView2Args, JvComponentBase, JvAppEvent {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
 
 const
   WV_INITIALIZED = WM_APP + $100;
@@ -17,7 +17,6 @@ type
   TmainBrowser = class(TForm)
     CardPanel1: TCardPanel;
     Panel1: TPanel;
-    UWPQuickButton1: TUWPQuickButton;
     Timer1: TTimer;
     tmrRamUsage: TTimer;
     procedure FormShow(Sender: TObject);
@@ -248,6 +247,7 @@ end;
 
 initialization
   GlobalWebView2Loader                      := TWVLoader.Create(nil);
+//  GlobalWebView2Loader.ProxySettings.Server := '127.0.0.1:8888';
   GlobalWebView2Loader.EnableGPU := True;
   GlobalWebView2Loader.EnableTrackingPrevention := False;
   GlobalWebView2Loader.UserDataFolder       := ExtractFileDir(Application.ExeName) + '\CustomCache';
