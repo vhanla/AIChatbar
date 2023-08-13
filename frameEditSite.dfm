@@ -57,7 +57,6 @@ object Frame1: TFrame1
     Caption = '...'
     TabOrder = 3
     OnClick = btnSearchSVGClick
-    ExplicitLeft = 424
   end
   object ckUserScript: TCheckBox
     Left = 16
@@ -75,7 +74,6 @@ object Frame1: TFrame1
     Anchors = [akTop, akRight]
     Caption = 'Enable UserStyles'
     TabOrder = 5
-    ExplicitLeft = 326
   end
   object ckEnabled: TCheckBox
     Left = 16
@@ -85,15 +83,12 @@ object Frame1: TFrame1
     Anchors = [akLeft, akBottom]
     Caption = 'Enabled'
     TabOrder = 6
-    ExplicitTop = 473
   end
   object txtUserScript: TMemo
     Left = 16
     Top = 228
     Width = 233
     Height = 136
-    Lines.Strings = (
-      'Memo1')
     TabOrder = 7
   end
   object txtUserStyle: TMemo
@@ -102,10 +97,7 @@ object Frame1: TFrame1
     Width = 233
     Height = 136
     Anchors = [akTop, akRight]
-    Lines.Strings = (
-      'Memo1')
     TabOrder = 8
-    ExplicitLeft = 326
   end
   object btnCancel: TButton
     Left = 401
@@ -115,8 +107,6 @@ object Frame1: TFrame1
     Anchors = [akRight, akBottom]
     Caption = '&Cancel'
     TabOrder = 9
-    ExplicitLeft = 403
-    ExplicitTop = 466
   end
   object btnOK: TButton
     Left = 482
@@ -126,8 +116,6 @@ object Frame1: TFrame1
     Anchors = [akRight, akBottom]
     Caption = 'OK'
     TabOrder = 10
-    ExplicitLeft = 413
-    ExplicitTop = 349
   end
   object lblUA: TLabeledEdit
     Left = 16
