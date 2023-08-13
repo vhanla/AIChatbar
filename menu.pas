@@ -56,7 +56,6 @@ type
     procedure JvApplicationHotKey1HotKey(Sender: TObject);
     procedure JvApplicationHotKey1HotKeyRegisterFailed(Sender: TObject;
       var HotKey: TShortCut);
-    procedure Sdfsd(Sender: TObject);
     procedure JvAppEvents1Activate(Sender: TObject);
     procedure pmCardClose(Sender: TObject);
 //    procedure FormPaint(Sender: TObject);
@@ -415,12 +414,15 @@ End;
 
 procedure TfrmMenu.FocusCurrentBrowser;
 begin
-  if GetForegroundWindow = mainBrowser.Handle then
+  if Assigned(mainBrowser) then
   begin
-    if mainBrowser.CardPanel1.CardCount > 0 then
+    if GetForegroundWindow = mainBrowser.Handle then
     begin
-      if Assigned(mainBrowser.CardPanel1.ActiveCard) then
-        TBrowserCard(mainBrowser.CardPanel1.ActiveCard).FocusBrowser;
+      if mainBrowser.CardPanel1.CardCount > 0 then
+      begin
+        if Assigned(mainBrowser.CardPanel1.ActiveCard) then
+          TBrowserCard(mainBrowser.CardPanel1.ActiveCard).FocusBrowser;
+      end;
     end;
   end;
 end;
@@ -708,10 +710,7 @@ begin
   Result := startMenuOn;
 end;
 
-procedure TfrmMenu.Sdfsd(Sender: TObject);
-begin
-  FocusCurrentBrowser;
-end;
+
 
 procedure TfrmMenu.JvAppEvents1Activate(Sender: TObject);
 begin
