@@ -8,7 +8,7 @@ uses
   System.ImageList, Vcl.ControlList, Vcl.VirtualImage, Vcl.BaseImageCollection,
   SVGIconImageCollection, Vcl.ToolWin, IconFontsImageListBase,
   IconFontsImageList, Skia, Skia.Vcl, Vcl.Mask, frameEditSite, JvExComCtrls,
-  JvHotKey;
+  JvHotKey, settingsHelper;
 
 type
   TfrmSetting = class(TForm)
@@ -16,45 +16,27 @@ type
     lblTitle: TLabel;
     OpenDialog1: TOpenDialog;
     PageControl1: TPageControl;
-    TabSheet1: TTabSheet;
     ImageList1: TImageList;
     TabSheet2: TTabSheet;
-    TabSheet3: TTabSheet;
-    TabSheet4: TTabSheet;
     TabSheet5: TTabSheet;
     TabSheet6: TTabSheet;
-    chkLogonStretch: TCheckBox;
+    chkAutoHide: TCheckBox;
     chkAutoStart: TCheckBox;
-    chkEnableLogon: TCheckBox;
-    chkEnableSwitcher: TCheckBox;
-    chkSwitcherApps: TCheckBox;
+    chkClipText: TCheckBox;
+    chkFSOff: TCheckBox;
+    chkFSOff3D: TCheckBox;
     GroupBox1: TGroupBox;
-    chkEnableClock: TCheckBox;
-    rbShowWin8Menu: TRadioButton;
-    rbShowDesktop: TRadioButton;
-    rbShowNormalMenu: TRadioButton;
+    chkClipImg: TCheckBox;
     Image1: TImage;
     lblProgName: TLabel;
     lblAboutStrings: TLabel;
     chkUseEmbeddedBrowser: TRadioButton;
     rbUseExternalBrowser: TRadioButton;
-    cbbBrowsers: TComboBox;
-    edtBrowserPath: TEdit;
-    chkLaunchAsWebApp: TCheckBox;
-    chkUseKioskMode: TCheckBox;
-    rbUseDefaultBrowser: TRadioButton;
-    rbsbLaunchURL: TRadioButton;
-    grpsbLaunch: TGroupBox;
-    rbsbAsExecutable: TRadioButton;
-    rbsbAsURLInEmbeddedBrowser: TRadioButton;
-    rbsbAsURLInExternalBrowser: TRadioButton;
-    edtsbCommandLine: TEdit;
-    grpStartCustom: TGroupBox;
-    imgStart: TImage;
-    edtStartImg: TEdit;
-    btnStartAddImg: TButton;
-    edtStartCustomText: TEdit;
-    cbbStartActions: TComboBox;
+    cbbPosition: TComboBox;
+    edtProxy: TEdit;
+    chkProxy: TCheckBox;
+    chkDarkMode: TCheckBox;
+    rbUseLeftWin11Taskbar: TRadioButton;
     grpUpToDate: TGroupBox;
     lblAppWebSite: TLabel;
     lblCheckNewVersion: TLabel;
@@ -62,12 +44,6 @@ type
     lblAuthorsTwitter: TLabel;
     lblSoftwareTwitter: TLabel;
     grpMargins: TGroupBox;
-    seMenuHotArea: TSpinEdit;
-    lblMenuHotArea: TLabel;
-    lblSwitcherHotArea: TLabel;
-    seSwitcherHotArea: TSpinEdit;
-    seThumbsHotArea: TSpinEdit;
-    lblThumbsHotArea: TLabel;
     ControlList1: TControlList;
     lblSiteUrl: TLabel;
     VirtualImage1: TVirtualImage;
@@ -81,13 +57,13 @@ type
     pnlEditSite: TPanel;
     Frame11: TFrame1;
     Button1: TButton;
-    Button2: TButton;
-    JvHotKey1: TJvHotKey;
+    btnSaveSettings: TButton;
+    JvGlobalHotKey: TJvHotKey;
+    chkWinKey: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure FormDestroy(Sender: TObject);
-    procedure cbbBrowsersChange(Sender: TObject);
     procedure lblCheckNewVersionClick(Sender: TObject);
     procedure lblAppWebSiteClick(Sender: TObject);
     procedure lblTwitterAccountClick(Sender: TObject);
@@ -96,15 +72,30 @@ type
     procedure ToolButton1Click(Sender: TObject);
     procedure Frame11btnCancelClick(Sender: TObject);
     procedure Frame11btnOKClick(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
+    procedure btnSaveSettingsClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure ControlList1BeforeDrawItem(AIndex: Integer; ACanvas: TCanvas;
       ARect: TRect; AState: TOwnerDrawState);
+    procedure chkAutoHideClick(Sender: TObject);
+    procedure chkAutoStartClick(Sender: TObject);
+    procedure cbbPositionChange(Sender: TObject);
+    procedure chkProxyClick(Sender: TObject);
+    procedure chkDarkModeClick(Sender: TObject);
+    procedure chkFSOff3DClick(Sender: TObject);
+    procedure chkFSOffClick(Sender: TObject);
+    procedure chkClipImgClick(Sender: TObject);
+    procedure chkClipTextClick(Sender: TObject);
+    procedure JvGlobalHotKeyChange(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure chkWinKeyClick(Sender: TObject);
   private
     { Private declarations }
+    fTempHotkey: TShortcut;
     procedure WMNCHitTest(var Message: TWMNCHitTest); message WM_NCHITTEST;
   public
     { Public declarations }
+    procedure FillSettings(settings: TSettings);
   protected
     procedure CreateParams(var Params: TCreateParams); override;
   end;
@@ -119,7 +110,7 @@ implementation
 {$R *.dfm}
 
 uses menu,
-  msxml, ShellAPI, functions;
+  msxml, ShellAPI, functions, Vcl.Menus;
 
 const
   RELESASESCOUNT = 2;
@@ -143,8 +134,8 @@ begin
         reg.GetKeyNames(s);
         webbrowserlst.BeginUpdate;
         webbrowserlst.Clear;
-        frmSetting.cbbBrowsers.Items.BeginUpdate;
-        frmSetting.cbbBrowsers.Items.Clear;
+//        frmSetting.cbbBrowsers.Items.BeginUpdate;
+//        frmSetting.cbbBrowsers.Items.Clear;
         webbrowserpath.BeginUpdate;
         webbrowserpath.Clear;
         for i := 0 to s.Count - 1 do
@@ -158,7 +149,7 @@ begin
             if reg1.OpenKeyReadOnly('Software\Clients\StartMenuInternet\' + s[i])
             then
             begin
-              frmSetting.cbbBrowsers.Items.Add(reg1.ReadString(''));
+//              frmSetting.cbbBrowsers.Items.Add(reg1.ReadString(''));
               reg1.CloseKey;
             end;
           finally
@@ -179,7 +170,7 @@ begin
           end;
         end;
         webbrowserpath.EndUpdate;
-        frmSetting.cbbBrowsers.Items.EndUpdate;
+//        frmSetting.cbbBrowsers.Items.EndUpdate;
         webbrowserlst.EndUpdate;
       finally
         s.Free;
@@ -236,26 +227,96 @@ begin
   Close;
 end;
 
-procedure TfrmSetting.Button2Click(Sender: TObject);
+procedure TfrmSetting.btnSaveSettingsClick(Sender: TObject);
 begin
+  fTempHotkey := JvGlobalHotKey.HotKey;
+  frmMenu.JvApplicationHotKey1.WindowsKey := chkWinKey.Checked;
+  frmMenu.JvApplicationHotKey1.HotKey := JvGlobalHotKey.HotKey;
+  frmMenu.Settings.SaveSettings;
   Close;
 end;
 
-procedure TfrmSetting.cbbBrowsersChange(Sender: TObject);
+procedure TfrmSetting.cbbPositionChange(Sender: TObject);
 begin
-  if cbbBrowsers.ItemIndex <> -1 then
-  begin
-    edtBrowserPath.Text := StringReplace(webbrowserpath[cbbBrowsers.ItemIndex],
-      '"', '', [rfReplaceAll]);
-    if pos('chrome.exe', edtBrowserPath.Text) > 0 then
-      chkLaunchAsWebApp.Enabled := true
-    else
-    begin
-      chkLaunchAsWebApp.Enabled := False;
-      chkLaunchAsWebApp.Checked := False;
-    end;
-  end;
+  frmMenu.Settings.BarPosition := cbbPosition.ItemIndex;
+end;
 
+procedure TfrmSetting.chkAutoHideClick(Sender: TObject);
+begin
+  frmMenu.Settings.AutoHide := chkAutoHide.Checked;
+end;
+
+procedure TfrmSetting.chkAutoStartClick(Sender: TObject);
+begin
+  frmMenu.Settings.AutoStart := chkAutoStart.Checked;
+end;
+
+procedure TfrmSetting.chkClipImgClick(Sender: TObject);
+begin
+  frmMenu.Settings.DetectClipboardImage := chkClipImg.Checked;
+end;
+
+procedure TfrmSetting.chkClipTextClick(Sender: TObject);
+begin
+  frmMenu.Settings.DetectClipboardText := chkClipText.Checked;
+end;
+
+procedure TfrmSetting.chkDarkModeClick(Sender: TObject);
+begin
+  frmMenu.Settings.DarkMode := chkDarkMode.Checked;
+end;
+
+procedure TfrmSetting.chkFSOff3DClick(Sender: TObject);
+begin
+  frmMenu.Settings.DisableOnFullScreenDirectX := chkFSOff3D.Checked;
+end;
+
+procedure TfrmSetting.chkFSOffClick(Sender: TObject);
+begin
+  frmMenu.Settings.DisableOnFullScreen := chkFSOff.Checked;
+end;
+
+procedure TfrmSetting.chkProxyClick(Sender: TObject);
+begin
+  if chkProxy.Checked then
+    frmMenu.Settings.Proxy := edtProxy.Text
+  else
+    frmMenu.Settings.Proxy := '';
+end;
+
+procedure TfrmSetting.chkWinKeyClick(Sender: TObject);
+begin
+  frmMenu.Settings.RequireWinKey := chkWinKey.Checked;
+end;
+
+procedure TfrmSetting.FillSettings(settings: TSettings);
+begin
+  chkAutoHide.Checked := settings.AutoHide;
+  chkAutoStart.Checked := settings.AutoStart;
+  chkClipText.Checked := settings.DetectClipboardText;
+  chkClipImg.Checked := settings.DetectClipboardImage;
+  chkFSOff.Checked := settings.DisableOnFullScreen;
+  chkFSOff3D.Checked := settings.DisableOnFullScreenDirectX;
+  JvGlobalHotKey.HotKey := TextToShortCut(settings.GlobalHotkey);
+  chkWinKey.Checked := settings.RequireWinKey;
+  cbbPosition.ItemIndex := settings.BarPosition;
+  if settings.Proxy = '' then
+  begin
+    chkProxy.Checked := False;
+    edtProxy.Text := '';
+  end
+  else
+  begin
+    chkProxy.Checked := True;
+    edtProxy.Text := settings.Proxy;
+  end;
+  chkDarkMode.Checked := settings.DarkMode;
+end;
+
+procedure TfrmSetting.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  JvGlobalHotKey.HotKey := fTempHotkey;
+  frmMenu.JvApplicationHotKey1.Active := True;
 end;
 
 procedure TfrmSetting.FormCreate(Sender: TObject);
@@ -307,6 +368,8 @@ begin
   end;
 
   EnableNCShadow(Handle);
+
+  FillSettings(frmMenu.Settings);
 end;
 
 function GetComputerNetName: string;
@@ -353,6 +416,12 @@ begin
   Perform(WM_SYSCOMMAND, $F012, 0);
 end;
 
+procedure TfrmSetting.FormShow(Sender: TObject);
+begin
+  fTempHotkey := JvGlobalHotKey.HotKey;
+  frmMenu.JvApplicationHotKey1.Active := False;
+end;
+
 procedure TfrmSetting.Frame11btnCancelClick(Sender: TObject);
 begin
   pnlEditSite.Visible := False;
@@ -375,6 +444,11 @@ begin
     Frame11.lblUA.Text
   );
   pnlEditSite.Visible := False;
+end;
+
+procedure TfrmSetting.JvGlobalHotKeyChange(Sender: TObject);
+begin
+  frmMenu.Settings.GlobalHotkey := ShortCutToText(JvGlobalHotKey.HotKey);
 end;
 
 procedure TfrmSetting.lblAppWebSiteClick(Sender: TObject);

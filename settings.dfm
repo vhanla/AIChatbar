@@ -18,9 +18,11 @@ object frmSetting: TfrmSetting
   GlassFrame.Right = 20
   GlassFrame.Bottom = 100
   Position = poScreenCenter
+  OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnMouseDown = FormMouseDown
+  OnShow = FormShow
   DesignSize = (
     699
     494)
@@ -113,21 +115,21 @@ object frmSetting: TfrmSetting
     TabOrder = 2
     OnClick = Button1Click
   end
-  object Button2: TButton
+  object btnSaveSettings: TButton
     Left = 605
     Top = 461
     Width = 75
     Height = 25
     Caption = 'OK'
     TabOrder = 3
-    OnClick = Button2Click
+    OnClick = btnSaveSettingsClick
   end
   object PageControl1: TPageControl
     Left = 39
     Top = 62
     Width = 641
     Height = 363
-    ActivePage = TabSheet2
+    ActivePage = TabSheet5
     Anchors = [akLeft, akTop, akRight, akBottom]
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -139,140 +141,6 @@ object frmSetting: TfrmSetting
     ParentFont = False
     TabOrder = 0
     TabPosition = tpBottom
-    object TabSheet1: TTabSheet
-      Caption = 'Start Button'
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      object rbShowWin8Menu: TRadioButton
-        Left = 27
-        Top = 17
-        Width = 113
-        Height = 17
-        Caption = 'Show Win8Menu'
-        Checked = True
-        TabOrder = 0
-        TabStop = True
-      end
-      object rbShowDesktop: TRadioButton
-        Left = 27
-        Top = 40
-        Width = 113
-        Height = 17
-        Caption = 'Show Desktop'
-        TabOrder = 1
-      end
-      object rbShowNormalMenu: TRadioButton
-        Left = 27
-        Top = 63
-        Width = 113
-        Height = 17
-        Caption = 'Show Normal Menu'
-        TabOrder = 2
-      end
-      object rbsbLaunchURL: TRadioButton
-        Left = 27
-        Top = 86
-        Width = 182
-        Height = 17
-        Caption = 'Launch: (executable, url)'
-        TabOrder = 3
-      end
-      object grpsbLaunch: TGroupBox
-        Left = 40
-        Top = 109
-        Width = 265
-        Height = 129
-        Caption = 'grpsbLaunch'
-        TabOrder = 4
-        object rbsbAsExecutable: TRadioButton
-          Left = 16
-          Top = 16
-          Width = 233
-          Height = 17
-          Caption = 'As Executable'
-          TabOrder = 0
-        end
-        object rbsbAsURLInEmbeddedBrowser: TRadioButton
-          Left = 16
-          Top = 39
-          Width = 233
-          Height = 17
-          Caption = 'As URL In Embedded Browser'
-          TabOrder = 1
-        end
-        object rbsbAsURLInExternalBrowser: TRadioButton
-          Left = 16
-          Top = 63
-          Width = 233
-          Height = 17
-          Caption = 'As URL In External Browser'
-          TabOrder = 2
-        end
-        object edtsbCommandLine: TEdit
-          Left = 16
-          Top = 97
-          Width = 233
-          Height = 21
-          TabOrder = 3
-        end
-      end
-      object grpStartCustom: TGroupBox
-        Left = 352
-        Top = 63
-        Width = 249
-        Height = 116
-        Caption = 'grpStartCustom'
-        TabOrder = 5
-        object imgStart: TImage
-          Left = 17
-          Top = 55
-          Width = 48
-          Height = 48
-        end
-        object edtStartImg: TEdit
-          Left = 79
-          Top = 80
-          Width = 122
-          Height = 21
-          TabOrder = 0
-          Text = 'edtStartImg'
-        end
-        object btnStartAddImg: TButton
-          Left = 207
-          Top = 80
-          Width = 27
-          Height = 25
-          Caption = 'btnStartAddImg'
-          TabOrder = 1
-        end
-        object edtStartCustomText: TEdit
-          Left = 80
-          Top = 53
-          Width = 121
-          Height = 21
-          TabOrder = 2
-          Text = 'edtStartCustomText'
-        end
-        object cbbStartActions: TComboBox
-          Left = 80
-          Top = 16
-          Width = 121
-          Height = 21
-          TabOrder = 3
-          Text = 'cbbStartActions'
-          Items.Strings = (
-            'Show Win8Menu'
-            'Show Desktop'
-            'Show Windows Menu'
-            'Launch Executable'
-            'Launch URL')
-        end
-      end
-    end
     object TabSheet2: TTabSheet
       Caption = 'AI Sites'
       ImageIndex = 1
@@ -293,10 +161,6 @@ object frmSetting: TfrmSetting
         ParentColor = False
         TabOrder = 0
         OnBeforeDrawItem = ControlList1BeforeDrawItem
-        ExplicitLeft = 43
-        ExplicitTop = 32
-        ExplicitWidth = 497
-        ExplicitHeight = 200
         object lblSiteUrl: TLabel
           AlignWithMargins = True
           Left = 82
@@ -325,7 +189,7 @@ object frmSetting: TfrmSetting
           Left = 5
           Top = 5
           Width = 48
-          Height = 48
+          Height = -10
           Margins.Left = 5
           Margins.Top = 5
           Margins.Right = 5
@@ -335,6 +199,7 @@ object frmSetting: TfrmSetting
           ImageWidth = 0
           ImageHeight = 0
           ImageIndex = -1
+          ExplicitHeight = 48
         end
         object lblSiteName: TLabel
           Left = 82
@@ -356,10 +221,10 @@ object frmSetting: TfrmSetting
         end
         object ControlListButton1: TControlListButton
           AlignWithMargins = True
-          Left = 588
+          Left = -41
           Top = 25
           Width = 38
-          Height = 8
+          Height = -50
           Margins.Top = 25
           Margins.Bottom = 25
           Align = alRight
@@ -371,10 +236,10 @@ object frmSetting: TfrmSetting
         end
         object ControlListButton2: TControlListButton
           AlignWithMargins = True
-          Left = 545
+          Left = -84
           Top = 25
           Width = 37
-          Height = 8
+          Height = -50
           Margins.Top = 25
           Margins.Bottom = 25
           Align = alRight
@@ -404,14 +269,6 @@ object frmSetting: TfrmSetting
         end
       end
     end
-    object TabSheet3: TTabSheet
-      Caption = 'Search Button'
-      ImageIndex = 2
-    end
-    object TabSheet4: TTabSheet
-      Caption = 'Share Button'
-      ImageIndex = 3
-    end
     object TabSheet5: TTabSheet
       Caption = 'Settings'
       Font.Charset = ANSI_CHARSET
@@ -421,13 +278,16 @@ object frmSetting: TfrmSetting
       Font.Style = []
       ImageIndex = 4
       ParentFont = False
-      object chkLogonStretch: TCheckBox
+      object chkAutoHide: TCheckBox
         Left = 24
         Top = 20
         Width = 268
         Height = 17
-        Caption = 'Stretch Logon Picture'
+        Caption = 'Auto hide AI chat bar'
+        Color = 2743985
+        ParentColor = False
         TabOrder = 0
+        OnClick = chkAutoHideClick
       end
       object chkAutoStart: TCheckBox
         Left = 24
@@ -436,30 +296,40 @@ object frmSetting: TfrmSetting
         Height = 17
         Caption = 'AutoStart with Windows'
         TabOrder = 1
+        OnClick = chkAutoStartClick
       end
-      object chkEnableLogon: TCheckBox
+      object chkClipText: TCheckBox
         Left = 24
         Top = 66
         Width = 268
         Height = 17
-        Caption = 'Enable Logon'
+        Caption = 'Detect Text Clipboard'
+        Color = 2743985
+        ParentColor = False
         TabOrder = 2
+        OnClick = chkClipTextClick
       end
-      object chkEnableSwitcher: TCheckBox
+      object chkFSOff: TCheckBox
         Left = 24
-        Top = 89
+        Top = 112
         Width = 268
         Height = 17
-        Caption = 'Enable Switcher'
+        Caption = 'Do not invoke on FullScreen Games'
+        Color = 2743985
+        ParentColor = False
         TabOrder = 3
+        OnClick = chkFSOffClick
       end
-      object chkSwitcherApps: TCheckBox
+      object chkFSOff3D: TCheckBox
         Left = 48
-        Top = 112
+        Top = 135
         Width = 244
         Height = 17
-        Caption = 'On click Windows Switcher'
+        Caption = 'All FullScreen Apps (directx games)'
+        Color = 2743985
+        ParentColor = False
         TabOrder = 4
+        OnClick = chkFSOff3DClick
       end
       object GroupBox1: TGroupBox
         Left = 308
@@ -474,135 +344,115 @@ object frmSetting: TfrmSetting
           Width = 273
           Height = 17
           Caption = 'Use internal browser'
-          Checked = True
           TabOrder = 0
-          TabStop = True
+          Visible = False
         end
         object rbUseExternalBrowser: TRadioButton
           Left = 16
           Top = 40
           Width = 273
           Height = 17
-          Caption = 'Use external browser'
+          Caption = 'ChatBar in Screen Sides'
+          Checked = True
           TabOrder = 1
+          TabStop = True
         end
-        object cbbBrowsers: TComboBox
+        object cbbPosition: TComboBox
           Left = 32
           Top = 63
           Width = 233
           Height = 21
           TabOrder = 2
-          OnChange = cbbBrowsersChange
+          Text = 'RIght'
+          OnChange = cbbPositionChange
+          Items.Strings = (
+            'Left'
+            'Top'
+            'RIght'
+            'Bottom')
         end
-        object edtBrowserPath: TEdit
+        object edtProxy: TEdit
           Left = 32
-          Top = 90
+          Top = 113
           Width = 233
           Height = 21
           TabOrder = 3
         end
-        object chkLaunchAsWebApp: TCheckBox
+        object chkProxy: TCheckBox
           Left = 32
-          Top = 117
-          Width = 257
+          Top = 90
+          Width = 185
           Height = 17
-          Caption = 'Launch as WebApp (Chrome only)'
-          Enabled = False
+          Caption = 'Proxy (host:port)'
+          Color = 2743985
+          ParentColor = False
           TabOrder = 4
+          OnClick = chkProxyClick
         end
-        object chkUseKioskMode: TCheckBox
+        object chkDarkMode: TCheckBox
           Left = 32
           Top = 140
           Width = 258
           Height = 17
-          Caption = 'Use Kiosk Mode (needs browsers to be closed first)'
+          Caption = 'Dark Mode'
+          Color = 2743985
+          ParentColor = False
           TabOrder = 5
+          OnClick = chkDarkModeClick
         end
-        object rbUseDefaultBrowser: TRadioButton
+        object rbUseLeftWin11Taskbar: TRadioButton
           Left = 16
           Top = 163
           Width = 282
           Height = 17
-          Caption = 'Use system default web browser'
+          Caption = 'Use Left space in Windows 11 centered taskbar'
+          Color = 2743985
+          Enabled = False
+          ParentColor = False
           TabOrder = 6
+          Visible = False
         end
       end
-      object chkEnableClock: TCheckBox
-        Left = 184
-        Top = 20
+      object chkClipImg: TCheckBox
+        Left = 24
+        Top = 89
         Width = 268
         Height = 17
-        Caption = 'Enable Clock'
+        Caption = 'Detect Image Clipboard'
+        Color = 2743985
+        ParentColor = False
         TabOrder = 6
+        OnClick = chkClipImgClick
       end
       object grpMargins: TGroupBox
         Left = 24
-        Top = 135
-        Width = 169
+        Top = 166
+        Width = 268
         Height = 90
-        Caption = 'grpMargins'
+        Caption = 'Global Hotkey to Invoke'
         TabOrder = 7
-        object lblMenuHotArea: TLabel
-          Left = 16
-          Top = 20
-          Width = 85
-          Height = 13
-          Caption = 'lblMenuHotArea'
-        end
-        object lblSwitcherHotArea: TLabel
-          Left = 16
-          Top = 40
-          Width = 99
-          Height = 13
-          Caption = 'lblSwitcherHotArea'
-        end
-        object lblThumbsHotArea: TLabel
-          Left = 16
-          Top = 60
-          Width = 96
-          Height = 13
-          Caption = 'lblThumbsHotArea'
-        end
-        object seMenuHotArea: TSpinEdit
-          Left = 113
-          Top = 16
-          Width = 40
-          Height = 22
-          MaxValue = 100
-          MinValue = 0
+        object JvGlobalHotKey: TJvHotKey
+          Left = 24
+          Top = 37
+          Width = 225
+          Height = 21
+          HotKey = 24699
+          Modifiers = [hkShift, hkCtrl]
           TabOrder = 0
-          Value = 0
+          OnChange = JvGlobalHotKeyChange
+          ParentColor = False
         end
-        object seSwitcherHotArea: TSpinEdit
-          Left = 113
-          Top = 36
-          Width = 40
-          Height = 22
-          MaxValue = 100
-          MinValue = 0
+        object chkWinKey: TCheckBox
+          Left = 24
+          Top = 64
+          Width = 71
+          Height = 17
+          Caption = 'WinKey'
+          Color = 2743985
+          ParentColor = False
           TabOrder = 1
-          Value = 0
+          OnClick = chkWinKeyClick
         end
-        object seThumbsHotArea: TSpinEdit
-          Left = 114
-          Top = 56
-          Width = 39
-          Height = 22
-          MaxValue = 100
-          MinValue = 0
-          TabOrder = 2
-          Value = 0
-        end
-      end
-      object JvHotKey1: TJvHotKey
-        Left = 272
-        Top = 264
-        Width = 121
-        Height = 21
-        HotKey = 24699
-        Modifiers = [hkShift, hkCtrl]
-        TabOrder = 8
-        ParentColor = False
       end
     end
     object TabSheet6: TTabSheet
@@ -2894,15 +2744,13 @@ object frmSetting: TfrmSetting
         Width = 437
         Height = 182
         Caption = 
-          'Win8Menu is a Windows 8 UI for Tablet like menu for Windows 7. '#13 +
-          #10' Notice: Touch is not supported yet.'#13#10' Author: Victor Alberto G' +
-          'il  <vhanla> http://apps.codigobit.info'#13#10#13#10' Copyright Codigobit ' +
-          '- All rights reserved.'#13#10#13#10'Part of the content included comes fro' +
-          'm:'#13#10'- flatmo - EIGHT, Jeremy Karlsson <enjikaka> : Metro UI'#13#10'- M' +
-          'etroDynamics'#13#10#13#10'DISCLAIMER:'#13#10'USE IT AT YOUR OWN RISK, ANY KIND O' +
-          'F DAMAGE TO YOUR COMPUTER, YOUR WIFE, '#13#10'YOUR PETS IS NOT THE AUT' +
-          'HOR'#39'S RESPONSIBILITY.'#13#10'Windows 8 is a registered trademark to Mi' +
-          'crosoft Corporation.'
+          'AI Chatbar for Windows 10/11 v1.2. '#13#10' Description: Tool to inter' +
+          'act withAI chat bots.'#13#10' Author: Victor Alberto Gil  <vhanla> htt' +
+          'ps://codigobit.net'#13#10#13#10' Copyright Codigobit - All rights reserved' +
+          '.'#13#10#13#10'Part of the content included comes from:'#13#10' '#13#10#13#10#13#10'DISCLAIMER' +
+          ':'#13#10'USE IT AT YOUR OWN RISK, ANY KIND OF DAMAGE TO YOUR COMPUTER,' +
+          ' YOUR WIFE, '#13#10'YOUR PETS IS NOT THE AUTHOR'#39'S RESPONSIBILITY.'#13#10'Win' +
+          'dows is a registered trademark to Microsoft Corporation.'
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -3109,11 +2957,13 @@ object frmSetting: TfrmSetting
         ExplicitTop = 322
       end
       inherited lblUA: TLabeledEdit
+        Height = 21
         EditLabel.Width = 93
         EditLabel.Height = 13
         EditLabel.ExplicitTop = 160
         EditLabel.ExplicitWidth = 93
         EditLabel.ExplicitHeight = 13
+        ExplicitHeight = 21
       end
     end
   end
@@ -4223,7 +4073,7 @@ object frmSetting: TfrmSetting
       item
         FontIconDec = 57665
       end>
-    Left = 540
-    Top = 234
+    Left = 348
+    Top = 290
   end
 end
