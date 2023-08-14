@@ -190,6 +190,10 @@ object frmMenu: TfrmMenu
       Enabled = False
       OnClick = pmCardCloseSiteClick
     end
+    object AlternatURL1: TMenuItem
+      Caption = 'Alternat URL'
+      OnClick = AlternatURL1Click
+    end
   end
   object TrayIcon1: TTrayIcon
     PopupMenu = pm1

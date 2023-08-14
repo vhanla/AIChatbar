@@ -38,6 +38,7 @@ type
     TrayIcon1: TTrayIcon;
     JvApplicationHotKey1: TJvApplicationHotKey;
     JvAppEvents1: TJvAppEvents;
+    AlternatURL1: TMenuItem;
 
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -63,6 +64,7 @@ type
     procedure pmCardClose(Sender: TObject);
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure AlternatURL1Click(Sender: TObject);
 //    procedure FormPaint(Sender: TObject);
   private
     { Private declarations }
@@ -273,6 +275,11 @@ begin
       FCurrentPopupCardId := Settings.Sites[TSkSvg(Sender).Tag].Id
     else
       FCurrentPopupCardId := 0; // hard coded way to say, site not started
+
+    if Trim(Settings.Sites[TSkSvg(Sender).Tag].AltUrl) <> '' then
+      AlternatURL1.Visible := True
+    else
+      AlternatURL1.Visible := False;
   end;
 end;
 
@@ -326,6 +333,28 @@ end;
 procedure TfrmMenu.HideMenu(Sender: TObject);
 begin
   tmrHideMenu.Enabled := true;
+end;
+
+procedure TfrmMenu.AlternatURL1Click(Sender: TObject);
+var
+  I, J: Integer;
+begin
+  for I := 0 to mainBrowser.CardPanel1.CardCount - 1 do
+  begin
+    if mainBrowser.CardPanel1.Cards[I].Tag = FCurrentPopupCardId then
+    begin
+      for J := 0 to Icons.Count - 1 do
+      begin
+        if Settings.Sites[Icons[J].Tag].Id = FCurrentPopupCardId then
+        begin
+          TBrowserCard(mainBrowser.CardPanel1.Cards[I]).Navigate(Settings.Sites[Icons[J].Tag].AltUrl);
+          Break;
+        end;
+      end;
+
+      Break;
+    end;
+  end;
 end;
 
 procedure TfrmMenu.buttonClick(btnID: Cardinal);
