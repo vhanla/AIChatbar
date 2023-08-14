@@ -72,6 +72,8 @@ type
     procedure ReadSites;
     procedure SaveSettings;
     procedure LoadSettings;
+    procedure UpdateSite(id: Integer; const name, url, alturl, svgicon, uscript, ustyle: string;
+      uscriptOn, ustyleOn, enabled: Boolean; position: Integer; const UA: string);
 
     property DB: TFDConnection read FDB;
     property Sites: TObjectList<TSite> read FSites write FSites;
@@ -265,6 +267,38 @@ begin
     ini.WriteBool('settings', 'darkmode', FDarkMode);
   finally
     ini.Free;
+  end;
+end;
+
+procedure TSettings.UpdateSite(id: Integer; const name, url, alturl, svgicon,
+  uscript, ustyle: string; uscriptOn, ustyleOn, enabled: Boolean;
+  position: Integer; const UA: string);
+var
+  q: TFDQuery;
+begin
+  q := TFDQuery.Create(nil);
+  try
+    q.Connection := FDB;
+    q.SQL.Text := 'UPDATE settings SET name = :name, url = :url, alturl = :alturl, svgIcon = :svgIcon,' +
+                   'userscript = :userscript, userscriptactive = :userscriptactive,' +
+                   'userstyle = :userstyle, userstyleactive = :userstyleactive,' +
+                   'enabled = :enabled, position = :position, ua = :ua WHERE id = :id';
+    q.Params.ParamByName('id').AsInteger := id;
+    q.Params.ParamByName('name').AsWideString := name;
+    q.Params.ParamByName('url').AsWideString := url;
+    q.Params.ParamByName('alturl').AsWideString := alturl;
+    q.Params.ParamByName('svgIcon').AsWideString := svgicon;
+    q.Params.ParamByName('userscript').AsWideString := uscript;
+    q.Params.ParamByName('userscriptactive').AsBoolean := uscriptOn;
+    q.Params.ParamByName('userstyle').AsWideString := ustyle;
+    q.Params.ParamByName('userstyleactive').AsBoolean := ustyleOn;
+    q.Params.ParamByName('enabled').AsBoolean := enabled;
+    q.Params.ParamByName('position').AsInteger := position;
+    q.Params.ParamByName('ua').AsWideString := UA;
+
+    q.ExecSQL;
+  finally
+    q.Free;
   end;
 end;
 
