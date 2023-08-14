@@ -24,7 +24,7 @@ uses
 {$R *.res}
 
 begin
-  if FindWindow('Win8MenuCLS', nil) > 0 then
+  if FindWindow('AIChatbarWnd', nil) > 0 then
     Exit;
 
   Application.Initialize;
