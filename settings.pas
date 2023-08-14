@@ -89,13 +89,16 @@ type
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure chkWinKeyClick(Sender: TObject);
+    procedure ControlList1ItemDblClick(Sender: TObject);
   private
     { Private declarations }
     fTempHotkey: TShortcut;
+    fEditedSiteId: Integer;
     procedure WMNCHitTest(var Message: TWMNCHitTest); message WM_NCHITTEST;
   public
     { Public declarations }
     procedure FillSettings(settings: TSettings);
+    procedure UpdateControlList;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
   end;
@@ -213,6 +216,23 @@ begin
   lblSiteName.Caption := frmMenu.Settings.Sites[AIndex].Name;
   lblSiteUrl.Caption := frmMenu.Settings.Sites[AIndex].Url;
   VirtualImage1.ImageIndex := AIndex;
+end;
+
+procedure TfrmSetting.ControlList1ItemDblClick(Sender: TObject);
+begin
+  fEditedSiteId := frmMenu.Settings.Sites[ControlList1.HotItemIndex].Id;
+  Frame11.lblName.Text := frmMenu.Settings.Sites[ControlList1.HotItemIndex].Name;
+  Frame11.lblURL.Text := frmMenu.Settings.Sites[ControlList1.HotItemIndex].Url;
+  Frame11.lblAltURL.Text := frmMenu.Settings.Sites[ControlList1.HotItemIndex].AltUrl;
+  Frame11.svgIcon.Svg.Source := frmMenu.Settings.Sites[ControlList1.HotItemIndex].Icon;
+  Frame11.ckUserScript.Checked := frmMenu.Settings.Sites[ControlList1.HotItemIndex].UserScriptEnabled;
+  Frame11.ckUserStyle.Checked := frmMenu.Settings.Sites[ControlList1.HotItemIndex].UserStyleEnabled;
+  Frame11.txtUserScript.Text := frmMenu.Settings.Sites[ControlList1.HotItemIndex].UserScript;
+  Frame11.txtUserStyle.Text := frmMenu.Settings.Sites[ControlList1.HotItemIndex].UserStyle;
+  Frame11.ckEnabled.Checked := frmMenu.Settings.Sites[ControlList1.HotItemIndex].Enabled;
+  Frame11.lblUA.Text := frmMenu.Settings.Sites[ControlList1.HotItemIndex].UA;
+  Frame11.btnOK.Caption := 'Update';
+  pnlEditSite.Visible := True;
 end;
 
 procedure TfrmSetting.CreateParams(var Params: TCreateParams);
@@ -364,18 +384,13 @@ begin
   webbrowserlst := TStringList.Create;
   webbrowserpath := TStringList.Create;
 
-  ListWebBrowsers;
+//  ListWebBrowsers;
 
   pnlEditSite.Align := alClient;
 
   if Assigned(frmMenu.Settings) then
   begin
-    ControlList1.ItemCount := frmMenu.Settings.Sites.Count;
-    SVGIconImageCollection1.ClearIcons;
-    for I := 0 to frmMenu.Settings.Sites.Count - 1 do
-    begin
-      SVGIconImageCollection1.LoadFromString(frmMenu.Settings.Sites[I].Icon, frmMenu.Settings.Sites[I].Name);
-    end;
+    UpdateControlList;
   end;
 
   EnableNCShadow(Handle);
@@ -409,7 +424,20 @@ end;
 
 procedure TfrmSetting.ToolButton1Click(Sender: TObject);
 begin
+  Frame11.btnOK.Caption := 'Add';
   pnlEditSite.Visible := True;
+end;
+
+procedure TfrmSetting.UpdateControlList;
+var
+  I: Integer;
+begin
+  ControlList1.ItemCount := frmMenu.Settings.Sites.Count;
+  SVGIconImageCollection1.ClearIcons;
+  for I := 0 to frmMenu.Settings.Sites.Count - 1 do
+  begin
+    SVGIconImageCollection1.LoadFromString(frmMenu.Settings.Sites[I].Icon, frmMenu.Settings.Sites[I].Name);
+  end;
 end;
 
 procedure TfrmSetting.FormDestroy(Sender: TObject);
@@ -441,19 +469,44 @@ end;
 procedure TfrmSetting.Frame11btnOKClick(Sender: TObject);
 begin
   // Accept and close
-  frmMenu.Settings.AddSites(
-    Frame11.lblName.Text,
-    Frame11.lblURL.Text,
-    Frame11.lblAltURL.Text,
-    Frame11.svgIcon.SVG.Source,
-    Frame11.txtUserScript.Text,
-    Frame11.txtUserStyle.Text,
-    Frame11.ckUserScript.Enabled,
-    Frame11.ckUserStyle.Enabled,
-    Frame11.ckEnabled.Enabled,
-    0,
-    Frame11.lblUA.Text
-  );
+  if Frame11.btnOK.Caption = 'Update' then
+  begin
+    frmMenu.Settings.UpdateSite(
+      fEditedSiteId,
+      Frame11.lblName.Text,
+      Frame11.lblURL.Text,
+      Frame11.lblAltURL.Text,
+      Frame11.svgIcon.SVG.Source,
+      Frame11.txtUserScript.Text,
+      Frame11.txtUserStyle.Text,
+      Frame11.ckUserScript.Checked,
+      Frame11.ckUserStyle.Checked,
+      Frame11.ckEnabled.Checked,
+      0,
+      Frame11.lblUA.Text
+    );
+  end
+  else
+  begin
+    frmMenu.Settings.AddSites(
+      Frame11.lblName.Text,
+      Frame11.lblURL.Text,
+      Frame11.lblAltURL.Text,
+      Frame11.svgIcon.SVG.Source,
+      Frame11.txtUserScript.Text,
+      Frame11.txtUserStyle.Text,
+      Frame11.ckUserScript.Checked,
+      Frame11.ckUserStyle.Checked,
+      Frame11.ckEnabled.Checked,
+      0,
+      Frame11.lblUA.Text
+    );
+  end;
+  // refresh the icons
+  frmMenu.LoadSites;
+  UpdateControlList;
+  frmMenu.Invalidate;
+
   pnlEditSite.Visible := False;
 end;
 

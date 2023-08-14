@@ -129,7 +129,7 @@ object frmSetting: TfrmSetting
     Top = 62
     Width = 641
     Height = 363
-    ActivePage = TabSheet6
+    ActivePage = TabSheet2
     Anchors = [akLeft, akTop, akRight, akBottom]
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -161,6 +161,7 @@ object frmSetting: TfrmSetting
         ParentColor = False
         TabOrder = 0
         OnBeforeDrawItem = ControlList1BeforeDrawItem
+        OnItemDblClick = ControlList1ItemDblClick
         object lblSiteUrl: TLabel
           AlignWithMargins = True
           Left = 82
@@ -189,7 +190,7 @@ object frmSetting: TfrmSetting
           Left = 5
           Top = 5
           Width = 48
-          Height = -10
+          Height = 48
           Margins.Left = 5
           Margins.Top = 5
           Margins.Right = 5
@@ -199,7 +200,6 @@ object frmSetting: TfrmSetting
           ImageWidth = 0
           ImageHeight = 0
           ImageIndex = -1
-          ExplicitHeight = 48
         end
         object lblSiteName: TLabel
           Left = 82
@@ -221,10 +221,10 @@ object frmSetting: TfrmSetting
         end
         object ControlListButton1: TControlListButton
           AlignWithMargins = True
-          Left = -41
+          Left = 588
           Top = 25
           Width = 38
-          Height = -50
+          Height = 8
           Margins.Top = 25
           Margins.Bottom = 25
           Align = alRight
@@ -236,18 +236,17 @@ object frmSetting: TfrmSetting
         end
         object ControlListButton2: TControlListButton
           AlignWithMargins = True
-          Left = -84
+          Left = 544
           Top = 25
-          Width = 37
-          Height = -50
+          Width = 38
+          Height = 8
           Margins.Top = 25
           Margins.Bottom = 25
           Align = alRight
           Caption = #55358#56449
           LinkHotColor = clHighlight
           Style = clbkToolButton
-          ExplicitLeft = 225
-          ExplicitHeight = 20
+          ExplicitLeft = 550
         end
       end
       object ToolBar1: TToolBar
