@@ -52,16 +52,17 @@ object mainBrowser: TmainBrowser
       Left = 424
       Top = 8
       Width = 12
-      Height = 12
+      Height = 15
       Cursor = crHandPoint
       Anchors = [akTop, akRight]
-      Caption = #59456
+      Caption = #55357#56524
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
       Font.Height = -12
-      Font.Name = 'Segoe MDL2 Assets'
+      Font.Name = 'Segoe UI'
       Font.Style = []
       ParentFont = False
+      Visible = False
       OnClick = lblPinClick
     end
   end

@@ -157,17 +157,17 @@ end;
 
 procedure TmainBrowser.lblPinClick(Sender: TObject);
 begin
-  if lblPin.Caption = '' then
+  if lblPin.Caption = '📌' then
   begin
     //pin
-    lblPin.Caption := '';
-    Self.FormStyle := fsStayOnTop;
+    lblPin.Caption := '🔳';
+    mainBrowser.FormStyle := fsStayOnTop;
   end
   else
   begin
     //unpin
-    lblPin.Caption := '';
-    Self.FormStyle := fsNormal;
+    lblPin.Caption := '📌';
+    mainBrowser.FormStyle := fsNormal;
   end;
 end;
 
