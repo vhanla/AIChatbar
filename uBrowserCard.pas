@@ -23,6 +23,7 @@ type
     procedure NotifyParentWindowPositionChanged;
     procedure CreateBrowser(const aHomepage, aUA: string); overload;
     procedure CreateBrowser(const aArgs : TCoreWebView2NewWindowRequestedEventArgs); overload;
+    procedure Navigate(const url: string);
 
     procedure FocusBrowser;
 
@@ -105,6 +106,11 @@ function TBrowserCard.GetInitialized: Boolean;
 begin
   Result := (FBrowserFrame <> nil) and
             FBrowserFrame.Initialized;
+end;
+
+procedure TBrowserCard.Navigate(const url: string);
+begin
+  FBrowserFrame.WVBrowser1.Navigate(url);
 end;
 
 procedure TBrowserCard.NotifyParentWindowPositionChanged;
