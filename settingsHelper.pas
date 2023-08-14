@@ -74,6 +74,7 @@ type
     procedure LoadSettings;
     procedure UpdateSite(id: Integer; const name, url, alturl, svgicon, uscript, ustyle: string;
       uscriptOn, ustyleOn, enabled: Boolean; position: Integer; const UA: string);
+    procedure DeleteSite(id: Integer);
 
     property DB: TFDConnection read FDB;
     property Sites: TObjectList<TSite> read FSites write FSites;
@@ -175,6 +176,23 @@ begin
   finally
     qr.Free;
   end;
+end;
+
+procedure TSettings.DeleteSite(id: Integer);
+var
+  q: TFDQuery;
+begin
+  q := TFDQuery.Create(nil);
+  try
+    q.Connection := FDB;
+    q.SQL.Text := 'DELETE from settings WHERE id = :id';
+    q.Params.ParamByName('id').AsInteger := id;
+
+    q.ExecSQL;
+  finally
+    q.Free;
+  end;
+
 end;
 
 destructor TSettings.Destroy;
