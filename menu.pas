@@ -268,18 +268,20 @@ end;
 procedure TfrmMenu.SiteContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 begin
+  AlternatURL1.Visible := False;
   if Sender is TSkSvg then
   begin
     //TODO needs better way for it to enable close site option
     if not TSkSvg(Sender).Svg.GrayScale then
-      FCurrentPopupCardId := Settings.Sites[TSkSvg(Sender).Tag].Id
+    begin
+      FCurrentPopupCardId := Settings.Sites[TSkSvg(Sender).Tag].Id;
+      // show alternate URL once the broser is loaded
+      if Trim(Settings.Sites[TSkSvg(Sender).Tag].AltUrl) <> '' then
+        AlternatURL1.Visible := True;
+
+    end
     else
       FCurrentPopupCardId := 0; // hard coded way to say, site not started
-
-    if Trim(Settings.Sites[TSkSvg(Sender).Tag].AltUrl) <> '' then
-      AlternatURL1.Visible := True
-    else
-      AlternatURL1.Visible := False;
   end;
 end;
 

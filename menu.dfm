@@ -192,6 +192,7 @@ object frmMenu: TfrmMenu
     end
     object AlternatURL1: TMenuItem
       Caption = 'Alternat URL'
+      Visible = False
       OnClick = AlternatURL1Click
     end
   end
