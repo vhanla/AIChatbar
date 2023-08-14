@@ -8,7 +8,7 @@ uses
   System.ImageList, Vcl.ControlList, Vcl.VirtualImage, Vcl.BaseImageCollection,
   SVGIconImageCollection, Vcl.ToolWin, IconFontsImageListBase,
   IconFontsImageList, Skia, Skia.Vcl, Vcl.Mask, frameEditSite, JvExComCtrls,
-  JvHotKey, settingsHelper;
+  JvHotKey, settingsHelper, Vcl.Menus;
 
 type
   TfrmSetting = class(TForm)
@@ -45,11 +45,6 @@ type
     lblSoftwareTwitter: TLabel;
     grpMargins: TGroupBox;
     ControlList1: TControlList;
-    lblSiteUrl: TLabel;
-    VirtualImage1: TVirtualImage;
-    lblSiteName: TLabel;
-    ControlListButton1: TControlListButton;
-    ControlListButton2: TControlListButton;
     SVGIconImageCollection1: TSVGIconImageCollection;
     ToolBar1: TToolBar;
     ToolButton1: TToolButton;
@@ -60,6 +55,14 @@ type
     btnSaveSettings: TButton;
     JvGlobalHotKey: TJvHotKey;
     chkWinKey: TCheckBox;
+    PopupMenu1: TPopupMenu;
+    DeleteSite1: TMenuItem;
+    Enable1: TMenuItem;
+    lblSiteURL: TLabel;
+    VirtualImage1: TVirtualImage;
+    lblSiteName: TLabel;
+    ControlListButton1: TControlListButton;
+    ControlListButton2: TControlListButton;
     procedure FormCreate(Sender: TObject);
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -90,10 +93,15 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure chkWinKeyClick(Sender: TObject);
     procedure ControlList1ItemDblClick(Sender: TObject);
+    procedure Enable1Click(Sender: TObject);
+    procedure ControlList1ContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
+    procedure DeleteSite1Click(Sender: TObject);
   private
     { Private declarations }
     fTempHotkey: TShortcut;
     fEditedSiteId: Integer;
+    fSelectedIndex: Integer;
     procedure WMNCHitTest(var Message: TWMNCHitTest); message WM_NCHITTEST;
   public
     { Public declarations }
@@ -113,7 +121,7 @@ implementation
 {$R *.dfm}
 
 uses menu,
-  msxml, ShellAPI, functions, Vcl.Menus, Net.HttpClient, System.JSON;
+  msxml, ShellAPI, functions, Net.HttpClient, System.JSON;
 
 const
   RELESASESCOUNT = 2;
@@ -218,6 +226,13 @@ begin
   VirtualImage1.ImageIndex := AIndex;
 end;
 
+procedure TfrmSetting.ControlList1ContextPopup(Sender: TObject;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  fSelectedIndex := ControlList1.HotItemIndex;
+  Enable1.Checked := frmMenu.Settings.Sites[ControlList1.HotItemIndex].Enabled;
+end;
+
 procedure TfrmSetting.ControlList1ItemDblClick(Sender: TObject);
 begin
   fEditedSiteId := frmMenu.Settings.Sites[ControlList1.HotItemIndex].Id;
@@ -240,6 +255,23 @@ begin
   inherited CreateParams(Params);
   // Params.Style:=Params.Style or WS_THICKFRAME;
   Params.WindowClass.Style := Params.WindowClass.Style or CS_DROPSHADOW;
+end;
+
+procedure TfrmSetting.DeleteSite1Click(Sender: TObject);
+begin
+  if MessageDlg('Delete '+ frmMenu.Settings.Sites[fSelectedIndex].Name+'?', TMsgDlgType.mtWarning, mbYesNo, 0) = mrYes then
+  begin
+    frmMenu.Settings.DeleteSite(frmMenu.Settings.Sites[fSelectedIndex].Id);
+    frmMenu.Settings.ReadSites;
+    frmMenu.LoadSites;
+    UpdateControlList;
+    frmMenu.Invalidate;
+  end;
+end;
+
+procedure TfrmSetting.Enable1Click(Sender: TObject);
+begin
+  ShowMessage(frmMenu.Settings.Sites[fSelectedIndex].Name);
 end;
 
 procedure TfrmSetting.Button1Click(Sender: TObject);
@@ -503,6 +535,7 @@ begin
     );
   end;
   // refresh the icons
+  frmMenu.Settings.ReadSites;
   frmMenu.LoadSites;
   UpdateControlList;
   frmMenu.Invalidate;

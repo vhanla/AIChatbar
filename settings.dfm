@@ -150,7 +150,7 @@ object frmSetting: TfrmSetting
         Width = 633
         Height = 284
         Align = alClient
-        ItemHeight = 58
+        ItemHeight = 88
         ItemMargins.Left = 0
         ItemMargins.Top = 0
         ItemMargins.Right = 0
@@ -159,38 +159,35 @@ object frmSetting: TfrmSetting
         ItemSelectionOptions.SelectedColorAlpha = 70
         ItemSelectionOptions.FocusedColorAlpha = 80
         ParentColor = False
+        PopupMenu = PopupMenu1
         TabOrder = 0
         OnBeforeDrawItem = ControlList1BeforeDrawItem
+        OnContextPopup = ControlList1ContextPopup
         OnItemDblClick = ControlList1ItemDblClick
-        object lblSiteUrl: TLabel
+        object lblSiteURL: TLabel
           AlignWithMargins = True
-          Left = 82
+          Left = 94
           Top = 31
-          Width = 313
-          Height = -4
+          Width = 426
+          Height = 48
           Margins.Left = 13
           Anchors = [akLeft, akTop, akRight, akBottom]
           AutoSize = False
-          Caption = 'http://bing.com/chat'
-          Color = clWhite
+          Caption = 
+            'This is example of item with multi-line text. You can put any TG' +
+            'raphicControl on it and adjust properties.'
           EllipsisPosition = epEndEllipsis
-          Font.Charset = ANSI_CHARSET
-          Font.Color = clMenu
-          Font.Height = -11
-          Font.Name = 'Segoe UI Light'
-          Font.Style = []
-          ParentColor = False
-          ParentFont = False
           ShowAccelChar = False
           Transparent = True
           WordWrap = True
+          ExplicitHeight = 18
         end
         object VirtualImage1: TVirtualImage
           AlignWithMargins = True
           Left = 5
           Top = 5
-          Width = 48
-          Height = 48
+          Width = 78
+          Height = 78
           Margins.Left = 5
           Margins.Top = 5
           Margins.Right = 5
@@ -200,17 +197,18 @@ object frmSetting: TfrmSetting
           ImageWidth = 0
           ImageHeight = 0
           ImageIndex = -1
+          ExplicitHeight = 48
         end
         object lblSiteName: TLabel
-          Left = 82
+          Left = 94
           Top = 8
-          Width = 68
+          Width = 29
           Height = 17
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
           Margins.Bottom = 4
-          Caption = 'Bing Chat'
+          Caption = 'Title'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -14
@@ -221,32 +219,29 @@ object frmSetting: TfrmSetting
         end
         object ControlListButton1: TControlListButton
           AlignWithMargins = True
-          Left = 588
+          Left = 545
           Top = 25
           Width = 38
-          Height = 8
+          Height = 38
           Margins.Top = 25
           Margins.Bottom = 25
           Align = alRight
-          Caption = #55358#56451
           LinkHotColor = clHighlight
           Style = clbkToolButton
-          ExplicitLeft = 268
-          ExplicitHeight = 20
+          ExplicitHeight = 8
         end
         object ControlListButton2: TControlListButton
           AlignWithMargins = True
-          Left = 544
+          Left = 589
           Top = 25
-          Width = 38
-          Height = 8
+          Width = 37
+          Height = 38
           Margins.Top = 25
           Margins.Bottom = 25
           Align = alRight
-          Caption = #55358#56449
           LinkHotColor = clHighlight
           Style = clbkToolButton
-          ExplicitLeft = 550
+          ExplicitHeight = 8
         end
       end
       object ToolBar1: TToolBar
@@ -308,6 +303,7 @@ object frmSetting: TfrmSetting
         Height = 17
         Caption = 'Detect Text Clipboard'
         Color = 2743985
+        Enabled = False
         ParentColor = False
         TabOrder = 2
         OnClick = chkClipTextClick
@@ -430,6 +426,7 @@ object frmSetting: TfrmSetting
         Height = 17
         Caption = 'Detect Image Clipboard'
         Color = 2743985
+        Enabled = False
         ParentColor = False
         TabOrder = 6
         OnClick = chkClipImgClick
@@ -2819,6 +2816,7 @@ object frmSetting: TfrmSetting
           ParentColor = False
           ParentFont = False
           Transparent = True
+          Visible = False
           OnClick = lblCheckNewVersionClick
         end
         object lblTwitterAccount: TLabel
@@ -4084,5 +4082,18 @@ object frmSetting: TfrmSetting
       end>
     Left = 348
     Top = 290
+  end
+  object PopupMenu1: TPopupMenu
+    Left = 336
+    Top = 232
+    object Enable1: TMenuItem
+      Caption = 'Enable'
+      Visible = False
+      OnClick = Enable1Click
+    end
+    object DeleteSite1: TMenuItem
+      Caption = 'Delete Site'
+      OnClick = DeleteSite1Click
+    end
   end
 end
