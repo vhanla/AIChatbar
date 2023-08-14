@@ -98,6 +98,7 @@ type
       var Handled: Boolean);
     procedure FocusCurrentBrowser;
     procedure SetDarkMode(Enable: Boolean = True);
+    procedure LoadSites;
     property OnMenuArea: Boolean read FOnMenuArea write FOnMenuArea;
   end;
 
@@ -214,8 +215,20 @@ begin
         Result := TForm(RefObject).BoundsRect;
       end,
       procedure(RefObject: TObject; const NewRect: TRect)
-      begin
+
+  var
+    I: Integer;
+  begin
         TForm(RefObject).BoundsRect := NewRect;
+        // update icons position
+        for I := 0 to Icons.Count - 1 do
+        begin
+          if Settings.BarPosition = ABE_LEFT then
+            Icons[I].Left := 54 - Self.Width + 4
+          else
+            Icons[I].Left := 4;
+        end;
+
       end,
       250, 0, TAQ.Ease(etBack, emInSnake),
       procedure(Sender: TObject)
@@ -416,7 +429,7 @@ end;
 procedure TfrmMenu.CreateParams(var Params: TCreateParams);
 begin
   inherited CreateParams(Params);
-  Params.WinClassName := 'Win8MenuCLS';
+  Params.WinClassName := 'AIChatbarWnd';
   Params.WndParent := Application.Handle;
   Params.ExStyle := Params.ExStyle and not WS_EX_APPWINDOW;
 end;
@@ -522,30 +535,7 @@ begin
   Settings.ReadSites;
   Settings.LoadSettings;
 
-  // create each icon
-  var sitesCount := frmMenu.Settings.Sites.Count;
-  var sPos := Height div 2 - sitesCount div 2 * 64;
-
-  for var I := 0 to sitesCount - 1 do
-  begin
-
-    var vicon := TSkSvg.Create(Self);
-    vicon.Parent := Self;
-    vicon.Svg.Source := Settings.Sites[I].Icon;
-    vicon.Svg.GrayScale := True;
-    vicon.Tag := I;
-    vicon.Left := 4;
-    vicon.Top := sPos + 64*I;
-    vicon.Width := 48;
-    vicon.Height := 48;
-    vicon.Cursor := crHandPoint;
-    vicon.Hint := Settings.Sites[I].Name;
-    vicon.ShowHint := True;
-    vicon.OnClick := CreateNewSite;
-    vicon.OnContextPopup := SiteContextPopup;
-    vicon.PopupMenu := pmCard;
-    Icons.Add(vicon);
-  end;
+  LoadSites;
 
   // Register ourselves as shell message instance receiver
   FHookWndHandle := AllocateHWnd(WndMethod);
@@ -823,6 +813,35 @@ begin
   if Settings.RequireWinKey then win := 'Win+';
 
   ShowMessage(Format('There was an error assigning this hotkey: %s%s '#13#10'It might be in use by other program or reserved by the OS.', [win, ShortCutToText(HotKey)]));
+end;
+
+procedure TfrmMenu.LoadSites;
+begin
+// create each icon
+  var sitesCount := frmMenu.Settings.Sites.Count;
+  var sPos := Height div 2 - sitesCount div 2 * 64;
+
+  Icons.Clear;
+  for var I := 0 to sitesCount - 1 do
+  begin
+
+    var vicon := TSkSvg.Create(Self);
+    vicon.Parent := Self;
+    vicon.Svg.Source := Settings.Sites[I].Icon;
+    vicon.Svg.GrayScale := True;
+    vicon.Tag := I;
+    vicon.Left := 4;
+    vicon.Top := sPos + 64*I;
+    vicon.Width := 48;
+    vicon.Height := 48;
+    vicon.Cursor := crHandPoint;
+    vicon.Hint := Settings.Sites[I].Name;
+    vicon.ShowHint := True;
+    vicon.OnClick := CreateNewSite;
+    vicon.OnContextPopup := SiteContextPopup;
+    vicon.PopupMenu := pmCard;
+    Icons.Add(vicon);
+  end;
 end;
 
 procedure TfrmMenu.pm1Close(Sender: TObject);
