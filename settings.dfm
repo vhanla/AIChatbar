@@ -129,7 +129,7 @@ object frmSetting: TfrmSetting
     Top = 62
     Width = 641
     Height = 363
-    ActivePage = TabSheet2
+    ActivePage = TabSheet5
     Anchors = [akLeft, akTop, akRight, akBottom]
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -361,6 +361,7 @@ object frmSetting: TfrmSetting
           Top = 63
           Width = 233
           Height = 21
+          Style = csDropDownList
           ItemIndex = 2
           TabOrder = 2
           Text = 'RIght'
