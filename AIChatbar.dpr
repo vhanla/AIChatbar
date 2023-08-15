@@ -5,6 +5,11 @@ program AIChatbar;
 {$R *.dres}
 
 uses
+  madExcept,
+  madLinkDisAsm,
+  madListHardware,
+  madListProcesses,
+  madListModules,
   FMX.Forms,
   Vcl.Forms,
   Windows,

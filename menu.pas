@@ -15,7 +15,7 @@ uses
   frmChatWebView, System.ImageList, Vcl.ImgList,
   AnyiQuack, AQPSystemTypesAnimations, uWVCoreWebView2Args,
   Vcl.Imaging.pngimage, Skia, Skia.Vcl, Generics.Collections, Winapi.ShellAPI,
-  settingsHelper, JvComponentBase, JvAppHotKey, JvAppEvent {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
+  settingsHelper, JvComponentBase, JvAppHotKey, JvAppEvent, madExceptVcl {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
 
 const
   APP_VERSION = '1.0.0';
@@ -39,6 +39,7 @@ type
     JvApplicationHotKey1: TJvApplicationHotKey;
     JvAppEvents1: TJvAppEvents;
     AlternatURL1: TMenuItem;
+    MadExceptionHandler1: TMadExceptionHandler;
 
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -91,7 +92,7 @@ type
     Settings: TSettings;
     Icons: TObjectList<TSkSvg>;
     PopupWindowRect: TRect;
-    constructor Create(AOwner: TComponent); override;
+    //constructor Create(AOwner: TComponent); override;
     procedure buttonClick(btnID: Cardinal);
     procedure ShowMenuAnimation;
     procedure CreateNewCard(const aArgs : TCoreWebView2NewWindowRequestedEventArgs);
@@ -364,24 +365,24 @@ begin
 
 end;
 
-constructor TfrmMenu.Create(AOwner: TComponent);
-var
-  MyTaskbar: TAppBarData;
-begin
-  inherited;
-
-  FillChar(MyTaskbar, SizeOf(TAppBarData), 0);
-  MyTaskbar.cbSize := SizeOf(TAppBarData);
-  MyTaskbar.hWnd := Handle;
-  MyTaskbar.uCallbackMessage := WM_USER + 888;
-  MyTaskbar.uEdge := ABE_RIGHT;
-  MyTaskbar.rc := ClientRect;
-  SHAppBarMessage(ABM_NEW, MyTaskbar);
-  SHAppBarMessage(ABM_ACTIVATE, MyTaskbar);
-  SHAppBarMessage(ABM_SETPOS, MyTaskbar);
-
-  Application.ProcessMessages;
-end;
+//constructor TfrmMenu.Create(AOwner: TComponent);
+//var
+//  MyTaskbar: TAppBarData;
+//begin
+//  inherited;
+//
+//  FillChar(MyTaskbar, SizeOf(TAppBarData), 0);
+//  MyTaskbar.cbSize := SizeOf(TAppBarData);
+//  MyTaskbar.hWnd := Handle;
+//  MyTaskbar.uCallbackMessage := WM_USER + 888;
+//  MyTaskbar.uEdge := ABE_RIGHT;
+//  MyTaskbar.rc := ClientRect;
+//  SHAppBarMessage(ABM_NEW, MyTaskbar);
+//  SHAppBarMessage(ABM_ACTIVATE, MyTaskbar);
+//  SHAppBarMessage(ABM_SETPOS, MyTaskbar);
+//
+//  Application.ProcessMessages;
+//end;
 
 procedure TfrmMenu.CreateNewCard(
   const aArgs: TCoreWebView2NewWindowRequestedEventArgs);
@@ -504,13 +505,13 @@ begin
 end;
 
 procedure TfrmMenu.FormClose(Sender: TObject; var Action: TCloseAction);
-var
-  MyTaskbar: TAppBarData;
+//var
+//  MyTaskbar: TAppBarData;
 begin
-  FillChar(MyTaskbar, SizeOf(TAppBarData), 0);
-  MyTaskbar.cbSize := SizeOf(TAppBarData);
-  MyTaskbar.hWnd := Handle;
-  SHAppBarMessage(ABM_REMOVE, MyTaskbar);
+//  FillChar(MyTaskbar, SizeOf(TAppBarData), 0);
+//  MyTaskbar.cbSize := SizeOf(TAppBarData);
+//  MyTaskbar.hWnd := Handle;
+//  SHAppBarMessage(ABM_REMOVE, MyTaskbar);
 end;
 
 procedure TfrmMenu.FormCreate(Sender: TObject);

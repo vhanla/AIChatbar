@@ -199,8 +199,8 @@ object frmMenu: TfrmMenu
   object TrayIcon1: TTrayIcon
     PopupMenu = pm1
     Visible = True
-    Left = 368
-    Top = 288
+    Left = 296
+    Top = 304
   end
   object JvApplicationHotKey1: TJvApplicationHotKey
     HotKey = 49275
@@ -213,5 +213,9 @@ object frmMenu: TfrmMenu
     OnActivate = JvAppEvents1Activate
     Left = 440
     Top = 360
+  end
+  object MadExceptionHandler1: TMadExceptionHandler
+    Left = 432
+    Top = 248
   end
 end
