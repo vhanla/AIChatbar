@@ -8,6 +8,8 @@ uses
 
 type
   TBrowserCard = class(TCard)
+  private
+    function GetRamUsage: Int64;
   protected
     FBrowserFrame: TBrowserFrame;
     FCardID: Cardinal;
@@ -29,6 +31,7 @@ type
 
     property CardID            : cardinal   read FCardID;
     property Initialized       : boolean    read GetInitialized;
+    property MemoryUsage       : Int64      read GetRamUsage;
   end;
 
 implementation
@@ -106,6 +109,11 @@ function TBrowserCard.GetInitialized: Boolean;
 begin
   Result := (FBrowserFrame <> nil) and
             FBrowserFrame.Initialized;
+end;
+
+function TBrowserCard.GetRamUsage: Int64;
+begin
+  Result := FBrowserFrame.MemoryUsage;
 end;
 
 procedure TBrowserCard.Navigate(const url: string);
