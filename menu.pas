@@ -224,6 +224,14 @@ begin
   frmMenuX.AnimateMenu(aLocation, aShow);
   Exit;}
 
+  if not isWindows11 then //Windows 10 is slow doing animations on blur windows
+  {$IFDEF EXPERIMENTAL}
+    {$I experimental.disable.blur.inc}
+  {$ELSE}
+    EnableBlur(Handle, False);
+  {$ENDIF}
+
+
   TypesAniPlugin := Take(Self)
     .FinishAnimations
     .Plugin<TAQPSystemTypesAnimations>;
@@ -268,6 +276,12 @@ begin
           tmrHideMenu.Enabled := True;
           ShowWindow(Handle, SW_HIDE);
         end;}
+        if not isWindows11 then
+        {$IFDEF EXPERIMENTAL}
+          {$I experimental.enable.blur.inc}
+        {$ELSE}
+          EnableBlur(Handle, True);
+        {$ENDIF}
       end
       );
 
