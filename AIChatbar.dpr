@@ -10,7 +10,6 @@ uses
   madListHardware,
   madListProcesses,
   madListModules,
-  FMX.Forms,
   Vcl.Forms,
   Windows,
   menu in 'menu.pas' {frmMenu},
@@ -25,7 +24,6 @@ uses
   uChildForm in 'uChildForm.pas',
   settingsHelper in 'settingsHelper.pas',
   frameEditSite in 'frameEditSite.pas' {Frame1: TFrame};
-
 {$R *.res}
 
 begin
