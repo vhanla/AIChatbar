@@ -77,7 +77,7 @@ type
     {$IFEND}
     FHookWndHandle: THandle;
     FHookMsg: Integer;
-    FFirstTimeBrowser: Boolean;
+
     procedure CreateParams(var Params: TCreateParams); override;
     procedure HideMenu(Sender: TObject);
     procedure RestoreRequest(var message: TMessage); message WM_USER + $1000;
@@ -89,12 +89,13 @@ type
     function IsStarteMenuVisible: Boolean;
   public
     { Public declarations }
+    FFirstTimeBrowser: Boolean;
     Settings: TSettings;
     Icons: TObjectList<TSkSvg>;
     PopupWindowRect: TRect;
     //constructor Create(AOwner: TComponent); override;
     procedure buttonClick(btnID: Cardinal);
-    procedure ShowMenuAnimation;
+    procedure ShowMenuAnimation(aLocation: Integer; aShow: Boolean = True);
     procedure CreateNewCard(const aArgs : TCoreWebView2NewWindowRequestedEventArgs);
     procedure CreateNewSite(Sender: TObject);
     procedure SiteContextPopup(Sender: TObject; MousePos: TPoint;
@@ -202,10 +203,27 @@ begin
   frmSetting.Show;
 end;
 
-procedure TfrmMenu.ShowMenuAnimation;
+procedure TfrmMenu.ShowMenuAnimation(aLocation: Integer; aShow: Boolean = True);
 var
   TypesAniPlugin: TAQPSystemTypesAnimations;
 begin
+{//  frmMenuX.Width := MulDiv(64, Self.PixelsPerInch, 96);
+  var wtf := MulDiv(264, Self.PixelsPerInch, 96);
+  frmMenuX.Left := Screen.Width - wtf;
+  frmMenuX.SetBounds(0, 0, 64, Screen.WorkAreaRect.Height);
+//  frmMenuX.Top := 0;
+//  frmMenuX.Height := Screen.WorkAreaRect.Height;
+
+  if not aShow and frmMenuX.Visible then
+    frmMenuX.Hide
+  else
+    frmMenuX.Show;
+
+  if frmMenuX.Icons.Count = 0 then
+    frmMenuX.LoadIcons(Settings);
+  frmMenuX.AnimateMenu(aLocation, aShow);
+  Exit;}
+
   TypesAniPlugin := Take(Self)
     .FinishAnimations
     .Plugin<TAQPSystemTypesAnimations>;
@@ -305,18 +323,18 @@ begin
   case Msg.WParam of
     HSHELL_WINDOWCREATED, HSHELL_WINDOWDESTROYED:
     begin
-      if IsStarteMenuVisible then
-      begin
-        ShowWindow(Handle, SW_SHOWNOACTIVATE);
-        if not OnMenuArea then
-          begin
-            OnMenuArea := True;
-            NewWidth := 54;
-            NewLeft := Screen.WorkAreaWidth - NewWidth +1;
-            NewAlphaBlend := MAXBYTE;
-            ShowMenuAnimation;
-          end;
-      end;
+//      if IsStarteMenuVisible then
+//      begin
+//        ShowWindow(Handle, SW_SHOWNOACTIVATE);
+//        if not OnMenuArea then
+//          begin
+//            OnMenuArea := True;
+//            NewWidth := 54;
+//            NewLeft := Screen.WorkAreaWidth - NewWidth +1;
+//            NewAlphaBlend := MAXBYTE;
+//            ShowMenuAnimation;
+//          end;
+//      end;
     end;
 
     HSHELL_WINDOWACTIVATED:
@@ -650,10 +668,10 @@ begin
             NewWidth := 54;
             NewLeft := GetLeftMost - 1;
             NewAlphaBlend := MAXBYTE;
-            ShowMenuAnimation;
+            ShowMenuAnimation(ABE_LEFT);
           end;
         end
-        else if (pos.X > Left + Width) and (tmrHideMenu.Enabled = False) then
+        else if (pos.X > frmMenu.Left + frmMenu.Width) and (tmrHideMenu.Enabled = False) then
         begin
           if OnMenuArea then
           begin
@@ -661,7 +679,7 @@ begin
             NewWidth := 1;
             NewLeft := GetLeftMost;
             NewAlphaBlend := 0;
-            ShowMenuAnimation;
+            ShowMenuAnimation(ABE_LEFT, False);
           end;
         end;
 
@@ -681,10 +699,11 @@ begin
             NewWidth := 54;
             NewLeft := Screen.WorkAreaWidth - NewWidth +1;
             NewAlphaBlend := MAXBYTE;
-            ShowMenuAnimation;
+            ShowMenuAnimation(ABE_RIGHT);
           end;
         end
         else if (pos.X < Left) and (tmrHideMenu.Enabled = False) then
+//        else if (pos.X < GetRightMost - frmMenuX.Width) then //and (tmrHideMenu.Enabled = False) then
         begin
           if OnMenuArea then
           begin
@@ -692,7 +711,7 @@ begin
             NewWidth := 1;
             NewLeft := Screen.WorkAreaWidth - NewWidth;
             NewAlphaBlend := 0;
-            ShowMenuAnimation;
+            ShowMenuAnimation(ABE_RIGHT, False);
           end;
         end;
 
