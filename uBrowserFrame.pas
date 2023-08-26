@@ -6,7 +6,8 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   uWVBrowserBase, uWVBrowser, uWVWinControl, uWVWindowParent, uWVTypeLibrary, uWVTypes,
-  uChildForm, uWVCoreWebView2Args, uWVCoreWebView2Deferral, Skia, Skia.Vcl;
+  uChildForm, uWVCoreWebView2Args, uWVCoreWebView2Deferral, Skia, Skia.Vcl,
+  Vcl.ExtCtrls, Winapi.TlHelp32, Winapi.PsAPI;
 
 type
   TBrowserTitleEvent = procedure(Sender: TObject; const aTitle : string) of object;
@@ -15,6 +16,7 @@ type
     WVBrowser1: TWVBrowser;
     WVWindowParent1: TWVWindowParent;
     SkAnimatedImage1: TSkAnimatedImage;
+    Timer1: TTimer;
     procedure WVBrowser1AfterCreated(Sender: TObject);
     procedure WVBrowser1DocumentTitleChanged(Sender: TObject);
     procedure WVBrowser1NavigationStarting(Sender: TObject;
@@ -37,12 +39,22 @@ type
     procedure WVBrowser1WebMessageReceived(Sender: TObject;
       const aWebView: ICoreWebView2;
       const aArgs: ICoreWebView2WebMessageReceivedEventArgs);
+    procedure WVBrowser1WebResourceResponseReceived(Sender: TObject;
+      const aWebView: ICoreWebView2;
+      const aArgs: ICoreWebView2WebResourceResponseReceivedEventArgs);
+    procedure Timer1Timer(Sender: TObject);
   private
     { Private declarations }
     FChildHandle: THandle;
+    FTimeout: Integer;
+    FMemoryUsage: Int64;
+    function GetMemoryUsage: Int64;
   protected
+    FGetHeaders        : boolean;
+    FHeaders           : TStringList;
     FHomepage             : wvstring;
     FUA                   : wvstring;
+    FDisableCSP           : Boolean;
     FOnBrowserTitleChange : TBrowserTitleEvent;
     FArgs                 : TCoreWebView2NewWindowRequestedEventArgs;
     FDeferral             : TCoreWebView2Deferral;
@@ -65,6 +77,9 @@ type
     property  OnBrowserTitleChange : TBrowserTitleEvent                        read FOnBrowserTitleChange  write FOnBrowserTitleChange;
     property  Args                 : TCoreWebView2NewWindowRequestedEventArgs  read FArgs                  write SetArgs;
     property  ChildHandle          : THandle                                   read FChildHandle;
+    property  Headers              : TStringList                               read FHeaders;
+    property  DisableCSP           : Boolean                                   read FDisableCSP            write FDisableCSP;
+    property  MemoryUsage          : Int64                                     read GetMemoryUsage;
   end;
 
 implementation
@@ -72,7 +87,11 @@ implementation
 {$R *.dfm}
 
 uses
-  uWVCoreWebView2WindowFeatures, frmChatWebView, menu;
+  uWVCoreWebView2WindowFeatures, frmChatWebView, menu,
+  uWVCoreWebView2WebResourceResponseView, uWVCoreWebView2HttpResponseHeaders,
+  uWVCoreWebView2HttpHeadersCollectionIterator,
+  uWVCoreWebView2ProcessInfoCollection, uWVCoreWebView2ProcessInfo,
+  uWVCoreWebView2Delegates;
 
 constructor TBrowserFrame.Create(AOwner: TComponent);
 begin
@@ -80,6 +99,8 @@ begin
 
   FHomepage              := '';
   FOnBrowserTitleChange  := nil;
+  FHeaders := TStringList.Create;
+  FTimeOut := 3; // 3 seconds
 end;
 
 procedure TBrowserFrame.CreateAllHandles;
@@ -105,6 +126,8 @@ begin
   if assigned(FArgs) then
     FreeAndNil(FArgs);
 
+  FHeaders.Free;
+
   inherited Destroy;
 end;
 
@@ -123,6 +146,74 @@ procedure TBrowserFrame.SetArgs(
 begin
   FArgs     := aValue;
   FDeferral := TCoreWebView2Deferral.Create(FArgs.Deferral);
+end;
+
+function TBrowserFrame.GetMemoryUsage: Int64;
+var
+  TempCollection: TCoreWebView2ProcessInfoCollection;
+  TempInfo: TCoreWebView2ProcessInfo;
+  I: Cardinal;
+  TempHandle: THandle;
+  TempMemCtrs: TProcessMemoryCounters;
+begin
+  Result := 0;
+  TempCollection := nil;
+  TempInfo := nil;
+
+  try
+    TempCollection := TCoreWebView2ProcessInfoCollection.Create(WVBrowser1.ProcessInfos);
+
+    I := 0;
+    while (I < TempCollection.Count) do
+    begin
+      if Assigned(TempInfo) then
+        TempInfo.BaseIntf := TempCollection.Items[I]
+      else
+        TempInfo := TCoreWebView2ProcessInfo.Create(TempCollection.Items[I]);
+
+      {case TempInfo.Kind of
+        COREWEBVIEW2_PROCESS_KIND_BROWSER         :
+
+      end;}
+
+      TempHandle := OpenProcess(PROCESS_QUERY_INFORMATION or PROCESS_VM_READ, False, TempInfo.ProcessId);
+      if TempHandle <> 0 then
+      try
+        ZeroMemory(@TempMemCtrs, SizeOf(TProcessMemoryCounters));
+        TempMemCtrs.cb := SizeOf(TProcessMemoryCounters);
+
+        if GetProcessMemoryInfo(TempHandle, @TempMemCtrs, TempMemCtrs.cb) then
+          Result := Result + TempMemCtrs.WorkingSetSize;
+
+      finally
+        CloseHandle(TempHandle);
+      end;
+
+
+      Inc(I);
+    end;
+
+  finally
+    if Assigned(TempCollection) then
+      FreeAndNil(TempCollection);
+
+    if Assigned(TempInfo) then
+      FreeAndNil(TempInfo);
+
+  end;
+
+end;
+
+procedure TBrowserFrame.Timer1Timer(Sender: TObject);
+begin
+  if FTimeout > 0 then
+    Dec(FTimeOut)
+  else
+  begin
+    Timer1.Enabled := False;
+    WVWindowParent1.Visible := True;
+  end;
+
 end;
 
 procedure TBrowserFrame.WVBrowser1AfterCreated(Sender: TObject);
@@ -144,6 +235,7 @@ begin
 
   WVWindowParent1.UpdateSize;
 //  NavControlPnl.Enabled := True;
+  Timer1.Enabled := True;
 end;
 
 procedure TBrowserFrame.WVBrowser1DocumentTitleChanged(Sender: TObject);
@@ -179,6 +271,7 @@ procedure TBrowserFrame.WVBrowser1NavigationStarting(Sender: TObject;
   const aWebView: ICoreWebView2;
   const aArgs: ICoreWebView2NavigationStartingEventArgs);
 begin
+  FGetHeaders := True;
 //  UpdateNavButtons(True);
   WVWindowParent1.Visible := False;
 end;
@@ -203,8 +296,64 @@ end;
 procedure TBrowserFrame.WVBrowser1WebMessageReceived(Sender: TObject;
   const aWebView: ICoreWebView2;
   const aArgs: ICoreWebView2WebMessageReceivedEventArgs);
+var
+  Msgs: TCoreWebView2WebMessageReceivedEventArgs;
 begin
+  Msgs := TCoreWebView2WebMessageReceivedEventArgs.Create(aArgs);
+  try
+    // create here the rules to interact with the webapps
+
+//    Msgs.WebMessageAsJson;
+  finally
+    Msgs.Free;
+  end;
   WVBrowser1.ExecuteScript('document.currentScript.setAttribute(''sanbox'', ''allow-forms'')');
+end;
+
+procedure TBrowserFrame.WVBrowser1WebResourceResponseReceived(Sender: TObject;
+  const aWebView: ICoreWebView2;
+  const aArgs: ICoreWebView2WebResourceResponseReceivedEventArgs);
+var
+  TempArgs     : TCoreWebView2WebResourceResponseReceivedEventArgs;
+  TempResponse : TCoreWebView2WebResourceResponseView;
+  TempHeaders  : TCoreWebView2HttpResponseHeaders;
+  TempIterator : TCoreWebView2HttpHeadersCollectionIterator;
+  TempName     : wvstring;
+  TempValue    : wvstring;
+  TempHandler  : ICoreWebView2WebResourceResponseViewGetContentCompletedHandler;
+begin
+  if FGetHeaders then
+  try
+    FHeaders.Clear;
+    FGetHeaders := False;
+    TempArgs := TCoreWebView2WebResourceResponseReceivedEventArgs.Create(aArgs);
+    TempResponse := TCoreWebView2WebResourceResponseView.Create(TempArgs.Response);
+    TempHandler := TCoreWebView2WebResourceResponseViewGetContentCompletedHandler.Create(WVBrowser1);
+    TempHeaders := TCoreWebView2HttpResponseHeaders.Create(TempResponse.Headers);
+    TempIterator := TCoreWebView2HttpHeadersCollectionIterator.Create(TempHeaders.Iterator);
+
+//    TempHeaders.AppendHeader('Content-Security-Policy', 'script-src ''self'' https://');
+
+    TempResponse.GetContent(TempHandler);
+    while TempIterator.HasCurrentHeader do
+    begin
+      if TempIterator.GetCurrentHeader(TempName, TempValue) then
+      begin
+        FHeaders.Add(TempName + ':' + TempValue);
+      end;
+      TempIterator.MoveNext;
+    end;
+
+    if FDisableCSP then
+      TempHeaders.AppendHeader('Content-Security-Policy', '');
+
+  finally
+    FreeAndNil(TempIterator);
+    FreeAndNil(TempHeaders);
+    FreeAndNil(TempResponse);
+    FreeAndNil(TempArgs);
+    TempHandler := nil;
+  end;
 end;
 
 end.

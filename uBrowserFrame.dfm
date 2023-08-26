@@ -25634,8 +25634,15 @@ object BrowserFrame: TBrowserFrame
     OnDocumentTitleChanged = WVBrowser1DocumentTitleChanged
     OnNewWindowRequested = WVBrowser1NewWindowRequested
     OnWebMessageReceived = WVBrowser1WebMessageReceived
+    OnWebResourceResponseReceived = WVBrowser1WebResourceResponseReceived
     OnDOMContentLoaded = WVBrowser1DOMContentLoaded
     Left = 104
     Top = 232
+  end
+  object Timer1: TTimer
+    Enabled = False
+    OnTimer = Timer1Timer
+    Left = 304
+    Top = 224
   end
 end
