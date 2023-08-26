@@ -113,7 +113,9 @@ end;
 
 function TBrowserCard.GetRamUsage: Int64;
 begin
-  Result := FBrowserFrame.MemoryUsage;
+  Result := 0;
+  if (FBrowserFrame <> nil) then
+    Result :=  FBrowserFrame.MemoryUsage;
 end;
 
 procedure TBrowserCard.Navigate(const url: string);

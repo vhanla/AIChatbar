@@ -213,8 +213,8 @@ var
 begin
   Bytes := GetRAMUsage;
 
-  // Get RAM usage of WebView2 instance and its child processes
-  if CardPanel1.CardCount > 0 then
+  // Get RAM usage of WebView2 instance and its child processes #TODO fix when removing
+  if (CardPanel1.CardCount > 0) and Assigned(CardPanel1.ActiveCard) then
     Bytes := Bytes + TBrowserCard(CardPanel1.ActiveCard).MemoryUsage;
 
   if Bytes > GB then
