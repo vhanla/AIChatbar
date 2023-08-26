@@ -2,7 +2,7 @@ object frmMenu: TfrmMenu
   Left = 258
   Top = 171
   BorderStyle = bsNone
-  Caption = 'frmMenu'
+  Caption = 'AIChatBar'
   ClientHeight = 597
   ClientWidth = 762
   Color = clSilver
