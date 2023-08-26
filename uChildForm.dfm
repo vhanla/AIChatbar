@@ -26,22 +26,27 @@ object ChildForm: TChildForm
     TabOrder = 0
     Browser = WVBrowser1
     ExplicitWidth = 618
-    ExplicitHeight = 432
+    ExplicitHeight = 413
   end
   object StatusBar1: TStatusBar
     Left = 0
     Top = 422
     Width = 624
     Height = 19
-    Panels = <>
-    ExplicitLeft = 320
-    ExplicitTop = 232
-    ExplicitWidth = 0
+    Cursor = crHandPoint
+    Panels = <
+      item
+        Width = 50
+      end>
+    OnDblClick = StatusBar1DblClick
+    ExplicitTop = 413
+    ExplicitWidth = 618
   end
   object WVBrowser1: TWVBrowser
     TargetCompatibleBrowserVersion = '95.0.1020.44'
     AllowSingleSignOnUsingOSPrimaryAccount = False
     OnAfterCreated = WVBrowser1AfterCreated
+    OnDocumentTitleChanged = WVBrowser1DocumentTitleChanged
     OnNewWindowRequested = WVBrowser1NewWindowRequested
     OnWindowCloseRequested = WVBrowser1WindowCloseRequested
     Left = 144

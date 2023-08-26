@@ -25,6 +25,8 @@ type
       const aArgs: ICoreWebView2NewWindowRequestedEventArgs);
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
+    procedure WVBrowser1DocumentTitleChanged(Sender: TObject);
+    procedure StatusBar1DblClick(Sender: TObject);
 
   private
     FArgs     : TCoreWebView2NewWindowRequestedEventArgs;
@@ -42,7 +44,7 @@ implementation
 {$R *.dfm}
 
 uses
-  uWVCoreWebView2WindowFeatures, menu, functions;
+  uWVCoreWebView2WindowFeatures, menu, functions, Winapi.ShellAPI;
 
 constructor TChildForm.Create(AOwner: TComponent; const aArgs : ICoreWebView2NewWindowRequestedEventArgs);
 begin
@@ -110,6 +112,15 @@ begin
 
 end;
 
+procedure TChildForm.StatusBar1DblClick(Sender: TObject);
+var
+  url: string;
+begin
+  url := StatusBar1.Panels[0].Text;
+  if url.StartsWith('http') then
+    ShellExecute(0, 'OPEN', PChar(url), nil, nil, SW_SHOWNORMAL);
+end;
+
 procedure TChildForm.WVBrowser1AfterCreated(Sender: TObject);
 begin
   if assigned(FArgs) and assigned(FDeferral) then
@@ -124,6 +135,12 @@ begin
     end;
 
   WVWindowParent1.UpdateSize;
+end;
+
+procedure TChildForm.WVBrowser1DocumentTitleChanged(Sender: TObject);
+begin
+  Caption := 'AIChatBar - ' + WVBrowser1.DocumentTitle;
+  StatusBar1.Panels[0].Text := WVBrowser1.Source;
 end;
 
 procedure TChildForm.WVBrowser1NewWindowRequested(Sender: TObject;
