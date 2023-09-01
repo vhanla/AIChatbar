@@ -12,7 +12,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, jpeg, ExtCtrls, Menus, StdCtrls, registry,
-  frmChatWebView, System.ImageList, Vcl.ImgList,
+  frmChatWebView, System.ImageList, Vcl.ImgList, VirtualDesktopManager,
   AnyiQuack, AQPSystemTypesAnimations, uWVCoreWebView2Args,
   Vcl.Imaging.pngimage, Skia, Skia.Vcl, Generics.Collections, Winapi.ShellAPI,
   settingsHelper, JvComponentBase, JvAppHotKey, JvAppEvent, madExceptVcl {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
@@ -87,6 +87,9 @@ type
     procedure WMShellHook(var Msg: TMessage);
     procedure WndMethod(var Msg: TMessage);
     function IsStarteMenuVisible: Boolean;
+
+    procedure CurrentDesktopChanged(Sender: TObject; OldDesktop, NewDesktop: TVirtualDesktop);
+    procedure CurrentDesktopChangedW11(Sender: TObject; OldDesktop, NewDesktop: TVirtualDesktopW11);
   public
     { Public declarations }
     FFirstTimeBrowser: Boolean;
@@ -498,6 +501,20 @@ begin
   Params.ExStyle := Params.ExStyle and not WS_EX_APPWINDOW;
 end;
 
+procedure TfrmMenu.CurrentDesktopChanged(Sender: TObject; OldDesktop,
+  NewDesktop: TVirtualDesktop);
+begin
+  if Assigned(mainBrowser) then
+    DesktopManager.MoveWindowToDesktop(mainBrowser.Handle, NewDesktop);
+end;
+
+procedure TfrmMenu.CurrentDesktopChangedW11(Sender: TObject; OldDesktop,
+  NewDesktop: TVirtualDesktopW11);
+begin
+  if Assigned(mainBrowser) then
+    DesktopManagerW11.MoveWindowToDesktop(mainBrowser.Handle, NewDesktop);
+end;
+
 Function GetUserFromWindows: string;
 Var
   UserName: string;
@@ -609,6 +626,13 @@ begin
   JvApplicationHotKey1.HotKey := TextToShortCut(Settings.GlobalHotkey);
   JvApplicationHotKey1.WindowsKey := Settings.RequireWinKey;
   JvApplicationHotKey1.Active := True;
+
+  // Virtual Desktop Aware (Win10/11)
+  if TOSVersion.Build >= 22000 then
+    DesktopManagerW11.OnCurrentDesktopChanged := CurrentDesktopChangedW11
+  else
+    DesktopManager.OnCurrentDesktopChanged := CurrentDesktopChanged;
+
 end;
 
 procedure TfrmMenu.FormDestroy(Sender: TObject);
