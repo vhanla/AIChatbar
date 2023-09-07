@@ -40,6 +40,7 @@ type
     JvAppEvents1: TJvAppEvents;
     AlternatURL1: TMenuItem;
     MadExceptionHandler1: TMadExceptionHandler;
+    BalloonHint1: TBalloonHint;
 
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -103,6 +104,7 @@ type
     procedure CreateNewSite(Sender: TObject);
     procedure SiteContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
+    procedure IconMouseHover(Sender: TObject);
     procedure FocusCurrentBrowser;
     procedure SetDarkMode(Enable: Boolean = True);
     procedure LoadSites;
@@ -374,6 +376,14 @@ end;
 procedure TfrmMenu.HideMenu(Sender: TObject);
 begin
   tmrHideMenu.Enabled := true;
+end;
+
+procedure TfrmMenu.IconMouseHover(Sender: TObject);
+begin
+  if Sender is TSkSvg then
+  begin
+    BalloonHint1.ShowHint(TSkSvg(Sender));
+  end;
 end;
 
 procedure TfrmMenu.AlternatURL1Click(Sender: TObject);
@@ -920,7 +930,7 @@ begin
 // create each icon
   var sitesCount := frmMenu.Settings.Sites.Count;
   if Screen.Height <= 768 then
-    sPos := Height div 2 - sitesCount div 2 * 40
+    sPos := Height div 2 - sitesCount div 2 * 34
   else
     sPos := Height div 2 - sitesCount div 2 * 64;
 
@@ -937,7 +947,7 @@ begin
     if Screen.Height <= 768 then
     begin
     vicon.Left := 2;
-    vicon.Top := sPos + 48*I;
+    vicon.Top := sPos + 34*I;
     vicon.Width := 32;
     vicon.Height := 32;
     end
@@ -954,7 +964,10 @@ begin
     vicon.OnClick := CreateNewSite;
     vicon.OnContextPopup := SiteContextPopup;
     vicon.PopupMenu := pmCard;
+    vicon.OnMouseEnter := IconMouseHover;
     Icons.Add(vicon);
+
+
   end;
 end;
 

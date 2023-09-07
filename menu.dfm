@@ -1,6 +1,7 @@
 object frmMenu: TfrmMenu
   Left = 258
   Top = 171
+  CustomHint = BalloonHint1
   BorderStyle = bsNone
   Caption = 'AIChatBar'
   ClientHeight = 597
@@ -26,6 +27,7 @@ object frmMenu: TfrmMenu
     Top = 180
     Width = 48
     Height = 48
+    CustomHint = BalloonHint1
     Visible = False
     OnClick = imgMenuClick
     Svg.Source = 
@@ -217,5 +219,12 @@ object frmMenu: TfrmMenu
   object MadExceptionHandler1: TMadExceptionHandler
     Left = 432
     Top = 248
+  end
+  object BalloonHint1: TBalloonHint
+    Style = bhsStandard
+    Delay = 150
+    HideAfter = 500
+    Left = 368
+    Top = 288
   end
 end
