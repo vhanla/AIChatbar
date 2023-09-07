@@ -256,7 +256,10 @@ begin
         for I := 0 to Icons.Count - 1 do
         begin
           if Settings.BarPosition = ABE_LEFT then
-            Icons[I].Left := 54 - Self.Width + 4
+            if Screen.Height <= 768 then
+              Icons[I].Left := 42 - Self.Width + 2
+            else
+              Icons[I].Left := 54 - Self.Width + 4
           else
             Icons[I].Left := 4;
         end;
