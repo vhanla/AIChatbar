@@ -703,7 +703,10 @@ begin
           if not OnMenuArea then
           begin
             OnMenuArea := True;
-            NewWidth := 54;
+            if Screen.Height <= 768 then
+              NewWidth := 40
+            else
+              NewWidth := 54;
             NewLeft := GetLeftMost - 1;
             NewAlphaBlend := MAXBYTE;
             ShowMenuAnimation(ABE_LEFT);
@@ -734,7 +737,10 @@ begin
           if not OnMenuArea then
           begin
             OnMenuArea := True;
-            NewWidth := 54;
+            if Screen.Height <= 768 then
+              NewWidth := 40
+            else
+              NewWidth := 54;
             NewLeft := Screen.WorkAreaWidth - NewWidth +1;
             NewAlphaBlend := MAXBYTE;
             ShowMenuAnimation(ABE_RIGHT);
@@ -905,10 +911,15 @@ begin
 end;
 
 procedure TfrmMenu.LoadSites;
+var
+  sPos: Integer;
 begin
 // create each icon
   var sitesCount := frmMenu.Settings.Sites.Count;
-  var sPos := Height div 2 - sitesCount div 2 * 64;
+  if Screen.Height <= 768 then
+    sPos := Height div 2 - sitesCount div 2 * 40
+  else
+    sPos := Height div 2 - sitesCount div 2 * 64;
 
   Icons.Clear;
   for var I := 0 to sitesCount - 1 do
@@ -919,10 +930,21 @@ begin
     vicon.Svg.Source := Settings.Sites[I].Icon;
     vicon.Svg.GrayScale := True;
     vicon.Tag := I;
+    // let's make it smaller on lower screen resolutions
+    if Screen.Height <= 768 then
+    begin
+    vicon.Left := 2;
+    vicon.Top := sPos + 48*I;
+    vicon.Width := 32;
+    vicon.Height := 32;
+    end
+    else
+    begin
     vicon.Left := 4;
     vicon.Top := sPos + 64*I;
     vicon.Width := 48;
     vicon.Height := 48;
+    end;
     vicon.Cursor := crHandPoint;
     vicon.Hint := Settings.Sites[I].Name;
     vicon.ShowHint := True;
