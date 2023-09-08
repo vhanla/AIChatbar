@@ -32,7 +32,7 @@ begin
 
   Application.Initialize;
   Application.MainFormOnTaskBar := False;
-  TStyleManager.TrySetStyle('Windows11 Polar Dark');
+  TStyleManager.TrySetStyle('Windows11 Modern Dark');
   Application.Title := 'AIChat';
   Application.CreateForm(TfrmMenu, frmMenu);
   Application.CreateForm(TfrmSetting, frmSetting);
