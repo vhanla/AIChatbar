@@ -97,9 +97,15 @@ type
     Settings: TSettings;
     Icons: TObjectList<TSkSvg>;
     PopupWindowRect: TRect;
+    // Menu's size
+    MenuTargetWidth: Integer;
+    MenuTargetHeight: Integer;
+    MenuTargetIconDimension: Integer;
+    MenuTargetIconSpan: Integer;
+    MenuMinWidth: Integer;
     //constructor Create(AOwner: TComponent); override;
     procedure buttonClick(btnID: Cardinal);
-    procedure ShowMenuAnimation(aLocation: Integer; aShow: Boolean = True);
+    procedure ShowMenuAnimation(aLocation: Integer; aShow: Boolean = True; animated: Boolean = False);
     procedure CreateNewCard(const aArgs : TCoreWebView2NewWindowRequestedEventArgs);
     procedure CreateNewSite(Sender: TObject);
     procedure SiteContextPopup(Sender: TObject; MousePos: TPoint;
@@ -208,7 +214,7 @@ begin
   frmSetting.Show;
 end;
 
-procedure TfrmMenu.ShowMenuAnimation(aLocation: Integer; aShow: Boolean = True);
+procedure TfrmMenu.ShowMenuAnimation(aLocation: Integer; aShow: Boolean = True; animated: Boolean = False);
 var
   TypesAniPlugin: TAQPSystemTypesAnimations;
 begin
@@ -229,81 +235,102 @@ begin
   frmMenuX.AnimateMenu(aLocation, aShow);
   Exit;}
 
-  if not isWindows11 then //Windows 10 is slow doing animations on blur windows
+  if animated and not isWindows11 then //Windows 10 is slow doing animations on blur windows
   {$IFDEF EXPERIMENTAL}
     {$I experimental.disable.blur.inc}
   {$ELSE}
     EnableBlur(Handle, False);
   {$ENDIF}
 
-
-  TypesAniPlugin := Take(Self)
-    .FinishAnimations
-    .Plugin<TAQPSystemTypesAnimations>;
-
-  // Animate the BoundsRect (position and size) of the form
-  TypesAniPlugin
-    .RectAnimation(Rect(NewLeft, 0, NewLeft + NewWidth, Screen.WorkAreaHeight),
-      function(RefObject: TObject): TRect
-      begin
-        Result := TForm(RefObject).BoundsRect;
-      end,
-      procedure(RefObject: TObject; const NewRect: TRect)
-
-  var
-    I: Integer;
+  if animated then
   begin
-        TForm(RefObject).BoundsRect := NewRect;
-        // update icons position
-        for I := 0 to Icons.Count - 1 do
+
+    TypesAniPlugin := Take(Self)
+      .FinishAnimations
+      .Plugin<TAQPSystemTypesAnimations>;
+
+    // Animate the BoundsRect (position and size) of the form
+    TypesAniPlugin
+      .RectAnimation(Rect(NewLeft, 0, NewLeft + NewWidth, Screen.WorkAreaHeight),
+        function(RefObject: TObject): TRect
         begin
-          if Settings.BarPosition = ABE_LEFT then
-            if Screen.Height <= 768 then
-              Icons[I].Left := 42 - Self.Width + 2
+          Result := TForm(RefObject).BoundsRect;
+        end,
+        procedure(RefObject: TObject; const NewRect: TRect)
+        var
+          I: Integer;
+        begin
+          TForm(RefObject).BoundsRect := NewRect;
+          // update icons position
+          for I := 0 to Icons.Count - 1 do
+          begin
+            if Settings.BarPosition = ABE_LEFT then
+              Icons[I].Left := MenuTargetWidth - Self.Width + MenuTargetIconSpan
             else
-              Icons[I].Left := 54 - Self.Width + 4
+              Icons[I].Left := MenuTargetIconSpan;
+          end;
+        end,
+        250, 0, TAQ.Ease(etBack, emInSnake),
+        procedure(Sender: TObject)
+        begin
+          if NewWidth < MenuTargetWidth then
+            ShowWindow(Handle, SW_HIDE);
+          // if timer for icons animations is not enabled
+          {if not tmrShowMenu.Enabled then
+          begin
+            tmrShowMenu.Enabled := True;
+            tmrHideMenu.Enabled := False;
+          end
           else
-            Icons[I].Left := 4;
-        end;
-
-      end,
-      250, 0, TAQ.Ease(etBack, emInSnake),
-      procedure(Sender: TObject)
-      begin
-        if NewWidth < 54 then
-          ShowWindow(Handle, SW_HIDE);
-        // if timer for icons animations is not enabled
-        {if not tmrShowMenu.Enabled then
-        begin
-          tmrShowMenu.Enabled := True;
-          tmrHideMenu.Enabled := False;
+          begin
+            tmrShowMenu.Enabled := False;
+            tmrHideMenu.Enabled := True;
+            ShowWindow(Handle, SW_HIDE);
+          end;}
+          if not isWindows11 then
+          {$IFDEF EXPERIMENTAL}
+            {$I experimental.enable.blur.inc}
+          {$ELSE}
+            EnableBlur(Handle, True);
+          {$ENDIF}
         end
-        else
-        begin
-          tmrShowMenu.Enabled := False;
-          tmrHideMenu.Enabled := True;
-          ShowWindow(Handle, SW_HIDE);
-        end;}
-        if not isWindows11 then
-        {$IFDEF EXPERIMENTAL}
-          {$I experimental.enable.blur.inc}
-        {$ELSE}
-          EnableBlur(Handle, True);
-        {$ENDIF}
-      end
-      );
+        );
 
-  // Animate the AlphaBlendValue
-  TypesAniPlugin.IntegerAnimation(NewAlphaBlend,
-    function(RefObject: TObject): Integer
+    // Animate the AlphaBlendValue
+    TypesAniPlugin.IntegerAnimation(NewAlphaBlend,
+      function(RefObject: TObject): Integer
+      begin
+        Result := TForm(RefObject).AlphaBlendValue;
+      end,
+      procedure(RefObject: TObject; const NewValue: Integer)
+      begin
+        TForm(RefObject).AlphaBlendValue := Byte(NewValue);
+      end,
+      2000, 0, TAQ.Ease(etCircle, emInInverted));
+  end
+  else // no animation, just show the form in the meant position
+  begin
+    Left := NewLeft;
+    Top := 0;
+    Width := NewWidth;
+    Height := Screen.WorkAreaHeight;
+    if NewWidth < MenuTargetWidth then
     begin
-      Result := TForm(RefObject).AlphaBlendValue;
-    end,
-    procedure(RefObject: TObject; const NewValue: Integer)
+      AlphaBlendValue := 0;
+      ShowWindow(Handle, SW_HIDE)
+    end
+    else
     begin
-      TForm(RefObject).AlphaBlendValue := Byte(NewValue);
-    end,
-    2000, 0, TAQ.Ease(etCircle, emInInverted));
+      AlphaBlendValue := 255;
+      for var I := 0 to Icons.Count - 1 do
+      begin
+        if Settings.BarPosition = ABE_LEFT then
+          Icons[I].Left := MenuTargetWidth - Self.Width + MenuTargetIconSpan
+        else
+          Icons[I].Left := MenuTargetIconSpan;
+        end;
+    end;
+  end;
 end;
 
 procedure TfrmMenu.SiteContextPopup(Sender: TObject; MousePos: TPoint;
@@ -716,10 +743,7 @@ begin
           if not OnMenuArea then
           begin
             OnMenuArea := True;
-            if Screen.Height <= 768 then
-              NewWidth := 40
-            else
-              NewWidth := 54;
+            NewWidth := MenuTargetWidth;
             NewLeft := GetLeftMost - 1;
             NewAlphaBlend := MAXBYTE;
             ShowMenuAnimation(ABE_LEFT);
@@ -750,10 +774,7 @@ begin
           if not OnMenuArea then
           begin
             OnMenuArea := True;
-            if Screen.Height <= 768 then
-              NewWidth := 40
-            else
-              NewWidth := 54;
+            NewWidth := MenuTargetWidth;
             NewLeft := Screen.WorkAreaWidth - NewWidth +1;
             NewAlphaBlend := MAXBYTE;
             ShowMenuAnimation(ABE_RIGHT);
@@ -927,12 +948,23 @@ procedure TfrmMenu.LoadSites;
 var
   sPos: Integer;
 begin
+  if Screen.Height <= 768 then
+  begin
+    MenuTargetIconDimension := 32; //32x32
+    MenuTargetIconSpan := 2; // icon's division
+    MenuTargetWidth := 40;
+  end
+  else
+  begin
+    MenuTargetIconDimension := 48; //48x48
+    MenuTargetIconSpan := 4;
+    MenuTargetWidth := 54;
+  end;
 // create each icon
   var sitesCount := frmMenu.Settings.Sites.Count;
-  if Screen.Height <= 768 then
-    sPos := Height div 2 - sitesCount div 2 * 34
-  else
-    sPos := Height div 2 - sitesCount div 2 * 64;
+  sPos := (Height
+    - (sitesCount * (MenuTargetIconDimension + MenuTargetIconSpan)))
+    div 2;
 
   Icons.Clear;
   for var I := 0 to sitesCount - 1 do
@@ -943,21 +975,10 @@ begin
     vicon.Svg.Source := Settings.Sites[I].Icon;
     vicon.Svg.GrayScale := True;
     vicon.Tag := I;
-    // let's make it smaller on lower screen resolutions
-    if Screen.Height <= 768 then
-    begin
-    vicon.Left := 2;
-    vicon.Top := sPos + 34*I;
-    vicon.Width := 32;
-    vicon.Height := 32;
-    end
-    else
-    begin
-    vicon.Left := 4;
-    vicon.Top := sPos + 64*I;
-    vicon.Width := 48;
-    vicon.Height := 48;
-    end;
+    vicon.Left := MenuTargetIconSpan;
+    vicon.Top := sPos + (MenuTargetIconDimension+MenuTargetIconSpan)*(I+1);
+    vicon.Width := MenuTargetIconDimension;
+    vicon.Height := MenuTargetIconDimension;
     vicon.Cursor := crHandPoint;
     vicon.Hint := Settings.Sites[I].Name;
     vicon.ShowHint := True;
@@ -966,8 +987,6 @@ begin
     vicon.PopupMenu := pmCard;
     vicon.OnMouseEnter := IconMouseHover;
     Icons.Add(vicon);
-
-
   end;
 end;
 
