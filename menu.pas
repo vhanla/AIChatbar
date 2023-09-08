@@ -7,7 +7,7 @@ unit menu;
 
 interface
 
-{$I ProjectDefines.inc}
+{.$I ProjectDefines.inc}
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
@@ -67,6 +67,7 @@ type
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure AlternatURL1Click(Sender: TObject);
+    procedure FormPaint(Sender: TObject);
 //    procedure FormPaint(Sender: TObject);
   private
     { Private declarations }
@@ -619,7 +620,7 @@ begin
 
   Color := clBlack; // $151515;//clBlack;
   Width := 1;
-  Height := Screen.Height - 164;
+  Height := Screen.WorkAreaRect.Height;// - 164;
   Top := 64;
   Left := GetRightMost - 1;// + 10; // Screen.Width+10;//-48;
   BorderStyle := bsNone;
@@ -702,20 +703,20 @@ begin
   end;
 end;
 
-//procedure TfrmMenu.FormPaint(Sender: TObject);
-//begin
-//  if TaskbarAccented then
-//  begin
-//    Canvas.Brush.Handle := CreateSolidBrushWithAlpha(BlendColors(GetAccentColor, clBlack,50), 200);
-//  end
-//  else
-//  begin
-//    if SystemUsesLightTheme then
-//      Canvas.Brush.Handle := CreateSolidBrushWithAlpha($dddddd, 200)    else
-//      Canvas.Brush.Handle := CreateSolidBrushWithAlpha($222222, 200);
-//  end;
-//  Canvas.FillRect(Rect(0,0,Width,Height));
-//end;
+procedure TfrmMenu.FormPaint(Sender: TObject);
+begin
+  if TaskbarAccented then
+  begin
+    Canvas.Brush.Handle := CreateSolidBrushWithAlpha(BlendColors(GetAccentColor, clBlack,50), 200);
+  end
+  else
+  begin
+    if SystemUsesLightTheme then
+      Canvas.Brush.Handle := CreateSolidBrushWithAlpha($dddddd, 200)    else
+      Canvas.Brush.Handle := CreateSolidBrushWithAlpha($222222, 200);
+  end;
+  Canvas.FillRect(Rect(0,0,Width,Height));
+end;
 
 procedure TfrmMenu.tmrMenuTimer(Sender: TObject);
 var
@@ -962,7 +963,7 @@ begin
   end;
 // create each icon
   var sitesCount := frmMenu.Settings.Sites.Count;
-  sPos := (Height
+  sPos := (Screen.WorkAreaRect.Height
     - (sitesCount * (MenuTargetIconDimension + MenuTargetIconSpan)))
     div 2;
 
@@ -976,7 +977,7 @@ begin
     vicon.Svg.GrayScale := True;
     vicon.Tag := I;
     vicon.Left := MenuTargetIconSpan;
-    vicon.Top := sPos + (MenuTargetIconDimension+MenuTargetIconSpan)*(I+1);
+    vicon.Top := sPos + (MenuTargetIconDimension+MenuTargetIconSpan)*I;
     vicon.Width := MenuTargetIconDimension;
     vicon.Height := MenuTargetIconDimension;
     vicon.Cursor := crHandPoint;
