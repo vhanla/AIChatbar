@@ -9,6 +9,7 @@ uses
 type
   TBrowserCard = class(TCard)
   private
+    FCardCtrlPEvent: TNotifyEvent;
     function GetRamUsage: Int64;
   protected
     FBrowserFrame: TBrowserFrame;
@@ -20,6 +21,7 @@ type
     procedure CreateFrame(const aArgs : TCoreWebView2NewWindowRequestedEventArgs); overload;
 
     procedure BrowserFrame_OnBrowserTitleChange(Sender: TObject; const aTitle : string);
+    procedure CtrlPEvent(Sender: TObject);
   public
     constructor Create(AOwner: TComponent; aCardID : cardinal; const aCaption : string); reintroduce;
     procedure NotifyParentWindowPositionChanged;
@@ -32,6 +34,7 @@ type
     property CardID            : cardinal   read FCardID;
     property Initialized       : boolean    read GetInitialized;
     property MemoryUsage       : Int64      read GetRamUsage;
+    property CardCtrlPEvent    : TNotifyEvent read FCardCtrlPEvent write FCardCtrlPEvent;
   end;
 
 implementation
@@ -80,6 +83,12 @@ begin
   FBrowserFrame.Args := aArgs;
 end;
 
+procedure TBrowserCard.CtrlPEvent(Sender: TObject);
+begin
+  if Assigned(FCardCtrlPEvent) then
+    FCardCtrlPEvent(Self);
+end;
+
 procedure TBrowserCard.FocusBrowser;
 begin
   if (FBrowserFrame <> nil) then
@@ -103,6 +112,7 @@ begin
 
   FBrowserFrame.UA := aUA;
   FBrowserFrame.Homepage := aHomepage;
+  FBrowserFrame.CtrlPEvent := CtrlPEvent;
 end;
 
 function TBrowserCard.GetInitialized: Boolean;
