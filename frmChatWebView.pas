@@ -56,6 +56,7 @@ type
     procedure CreateNewCard(const aArgs : TCoreWebView2NewWindowRequestedEventArgs);
     function CreateNewSite(const Id: Integer; const url, ua: string): Integer;
 
+    procedure CtrlPEvent(Sender: TObject);
   end;
 
 var
@@ -100,9 +101,16 @@ begin
 //  FClaudeID := CardPanel1.CardCount;
   Result := CardID;
   TempNewCard.CreateBrowser(url, ua);
+  TempNewCard.CardCtrlPEvent := CtrlPEvent;
 end;
 
 
+
+procedure TmainBrowser.CtrlPEvent(Sender: TObject);
+begin
+  // inform the menu ActionList Ctrl+P handler
+  frmMenu.actSwitchAIChatsExecute(Sender);
+end;
 
 procedure TmainBrowser.FormCreate(Sender: TObject);
 begin
