@@ -23,7 +23,9 @@ uses
   uBrowserFrame in 'uBrowserFrame.pas' {BrowserFrame: TFrame},
   uChildForm in 'uChildForm.pas',
   settingsHelper in 'settingsHelper.pas',
-  frameEditSite in 'frameEditSite.pas' {Frame1: TFrame};
+  frameEditSite in 'frameEditSite.pas' {Frame1: TFrame},
+  frmTaskGPT in 'frmTaskGPT.pas' {taskForm};
+
 {$R *.res}
 
 begin
@@ -37,6 +39,7 @@ begin
   Application.CreateForm(TfrmMenu, frmMenu);
   Application.CreateForm(TfrmSetting, frmSetting);
   Application.CreateForm(TmainBrowser, mainBrowser);
+  Application.CreateForm(TtaskForm, taskForm);
   Application.Run;
 
 end.
