@@ -13,6 +13,7 @@ object frmMenu: TfrmMenu
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
+  KeyPreview = True
   PopupMenu = pm1
   StyleElements = [seFont]
   OnClick = FormClick
@@ -157,6 +158,10 @@ object frmMenu: TfrmMenu
       Caption = '&Settings'
       OnClick = Settings1Click
     end
+    object askGPT1: TMenuItem
+      Caption = 'TaskGPT '#55358#56598
+      OnClick = askGPT1Click
+    end
     object N2: TMenuItem
       Caption = '-'
     end
@@ -227,5 +232,21 @@ object frmMenu: TfrmMenu
     HideAfter = 500
     Left = 368
     Top = 288
+  end
+  object JvApplicationHotKey2: TJvApplicationHotKey
+    HotKey = 0
+    OnHotKey = JvApplicationHotKey2HotKey
+    OnHotKeyRegisterFailed = JvApplicationHotKey2HotKeyRegisterFailed
+    Left = 288
+    Top = 216
+  end
+  object ActionList1: TActionList
+    Left = 136
+    Top = 136
+    object actSwitchAIChats: TAction
+      Caption = 'actSwitchAIChats'
+      ShortCut = 16464
+      OnExecute = actSwitchAIChatsExecute
+    end
   end
 end

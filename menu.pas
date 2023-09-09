@@ -15,7 +15,8 @@ uses
   frmChatWebView, System.ImageList, Vcl.ImgList, VirtualDesktopManager,
   AnyiQuack, AQPSystemTypesAnimations, uWVCoreWebView2Args,
   Vcl.Imaging.pngimage, Skia, Skia.Vcl, Generics.Collections, Winapi.ShellAPI,
-  settingsHelper, JvComponentBase, JvAppHotKey, JvAppEvent, madExceptVcl {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
+  settingsHelper, JvComponentBase, JvAppHotKey, JvAppEvent, madExceptVcl,
+  System.Actions, Vcl.ActnList {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
 
 const
   APP_VERSION = '1.0.0';
@@ -41,6 +42,10 @@ type
     AlternatURL1: TMenuItem;
     MadExceptionHandler1: TMadExceptionHandler;
     BalloonHint1: TBalloonHint;
+    askGPT1: TMenuItem;
+    JvApplicationHotKey2: TJvApplicationHotKey;
+    ActionList1: TActionList;
+    actSwitchAIChats: TAction;
 
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -68,6 +73,11 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure AlternatURL1Click(Sender: TObject);
     procedure FormPaint(Sender: TObject);
+    procedure askGPT1Click(Sender: TObject);
+    procedure JvApplicationHotKey2HotKeyRegisterFailed(Sender: TObject;
+      var HotKey: TShortCut);
+    procedure JvApplicationHotKey2HotKey(Sender: TObject);
+    procedure actSwitchAIChatsExecute(Sender: TObject);
 //    procedure FormPaint(Sender: TObject);
   private
     { Private declarations }
@@ -138,7 +148,7 @@ uses
   uBrowserCard,
   ActiveX,
   Vcl.Themes,
-  GDIPAPI, gdipobj, gdiputil;
+  GDIPAPI, gdipobj, gdiputil, frmTaskGPT;
 
 const
 //https://stackoverflow.com/a/22105803/537347 Windows 8 or newer only
@@ -414,6 +424,11 @@ begin
   end;
 end;
 
+procedure TfrmMenu.actSwitchAIChatsExecute(Sender: TObject);
+begin
+  ShowMessage('Not implemented yet!');
+end;
+
 procedure TfrmMenu.AlternatURL1Click(Sender: TObject);
 var
   I, J: Integer;
@@ -434,6 +449,11 @@ begin
       Break;
     end;
   end;
+end;
+
+procedure TfrmMenu.askGPT1Click(Sender: TObject);
+begin
+  taskForm.Show;
 end;
 
 procedure TfrmMenu.buttonClick(btnID: Cardinal);
@@ -667,6 +687,11 @@ begin
   JvApplicationHotKey1.HotKey := TextToShortCut(Settings.GlobalHotkey);
   JvApplicationHotKey1.WindowsKey := Settings.RequireWinKey;
   JvApplicationHotKey1.Active := True;
+
+  // TaskGPT Global Hotkey | Win+F11 hard code for now
+  JvApplicationHotKey2.HotKey := TextToShortCut('F11');
+  JvApplicationHotKey2.WindowsKey := True;
+  JvApplicationHotKey2.Active := True;
 
   // Virtual Desktop Aware (Win10/11)
   if TOSVersion.Build >= 22000 then
@@ -943,6 +968,17 @@ begin
   if Settings.RequireWinKey then win := 'Win+';
 
   ShowMessage(Format('There was an error assigning this hotkey: %s%s '#13#10'It might be in use by other program or reserved by the OS.', [win, ShortCutToText(HotKey)]));
+end;
+
+procedure TfrmMenu.JvApplicationHotKey2HotKey(Sender: TObject);
+begin
+  taskForm.Visible := not taskForm.Visible;
+end;
+
+procedure TfrmMenu.JvApplicationHotKey2HotKeyRegisterFailed(Sender: TObject;
+  var HotKey: TShortCut);
+begin
+  ShowMessage('There was an error assigning Win+F11 for TaskGPT');
 end;
 
 procedure TfrmMenu.LoadSites;
