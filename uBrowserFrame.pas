@@ -43,11 +43,14 @@ type
       const aWebView: ICoreWebView2;
       const aArgs: ICoreWebView2WebResourceResponseReceivedEventArgs);
     procedure Timer1Timer(Sender: TObject);
+    procedure WVBrowser1GetCookiesCompleted(Sender: TObject; aResult: HRESULT;
+      const aCookieList: ICoreWebView2CookieList);
   private
     { Private declarations }
     FChildHandle: THandle;
     FTimeout: Integer;
     FMemoryUsage: Int64;
+    FCtrlPEvent: TNotifyEvent;
     function GetMemoryUsage: Int64;
   protected
     FGetHeaders        : boolean;
@@ -80,6 +83,7 @@ type
     property  Headers              : TStringList                               read FHeaders;
     property  DisableCSP           : Boolean                                   read FDisableCSP            write FDisableCSP;
     property  MemoryUsage          : Int64                                     read GetMemoryUsage;
+    property  CtrlPEvent           : TNotifyEvent read FCtrlPEvent write FCtrlPEvent;
   end;
 
 implementation
@@ -91,12 +95,13 @@ uses
   uWVCoreWebView2WebResourceResponseView, uWVCoreWebView2HttpResponseHeaders,
   uWVCoreWebView2HttpHeadersCollectionIterator,
   uWVCoreWebView2ProcessInfoCollection, uWVCoreWebView2ProcessInfo,
-  uWVCoreWebView2Delegates;
+  uWVCoreWebView2Delegates,
+  uWVCoreWebView2CookieList, uWVCoreWebView2Cookie;
 
 constructor TBrowserFrame.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-
+  AOwner.GetParentComponent;
   FHomepage              := '';
   FOnBrowserTitleChange  := nil;
   FHeaders := TStringList.Create;
@@ -248,7 +253,39 @@ procedure TBrowserFrame.WVBrowser1DOMContentLoaded(Sender: TObject;
   const aWebView: ICoreWebView2;
   const aArgs: ICoreWebView2DOMContentLoadedEventArgs);
 begin
-WVWindowParent1.Visible := True;
+  WVWindowParent1.Visible := True;
+  WVBrowser1.GetCookies();
+end;
+
+procedure TBrowserFrame.WVBrowser1GetCookiesCompleted(Sender: TObject;
+  aResult: HRESULT; const aCookieList: ICoreWebView2CookieList);
+var
+  TempCookieList: TCoreWebView2CookieList;
+  TempCookie: TCoreWebView2Cookie;
+  I: Integer;
+  a, b, c: Boolean;
+begin
+  TempCookieList := nil;
+  TempCookie := nil;
+
+  if Assigned(aCookieList) then
+  try
+    TempCookieList := TCoreWebView2CookieList.Create(aCookieList);
+    TempCookie := TCoreWebView2Cookie.Create(nil);
+
+    for I := 0 to TempCookieList.Count - 1 do
+    begin
+      TempCookie.BaseIntf := TempCookieList.Items[I];
+      TempCookie.Name;
+      TempCookie.Value;
+    end;
+
+  finally
+    if Assigned(TempCookieList) then
+      FreeAndNil(TempCookieList);
+    if Assigned(TempCookie) then
+      FreeAndNil(TempCookie);
+  end;
 end;
 
 procedure TBrowserFrame.WVBrowser1InitializationError(Sender: TObject;
@@ -265,6 +302,7 @@ begin
   SkAnimatedImage1.Enabled := False;
   SkAnimatedImage1.Visible := False;
   Winapi.Windows.SetFocus(WVWindowParent1.ChildWindowHandle);
+  WVBrowser1.ExecuteScript('window.addEventListener("keydown", function (e) { if (e.ctrlKey && e.key ==="p") { e.preventDefault(); window.chrome.webview.postMessage("ctrlp"); } });');
 end;
 
 procedure TBrowserFrame.WVBrowser1NavigationStarting(Sender: TObject;
@@ -302,6 +340,14 @@ begin
   Msgs := TCoreWebView2WebMessageReceivedEventArgs.Create(aArgs);
   try
     // create here the rules to interact with the webapps
+
+    // handle Ctrl+P to switch among the other AI chats
+    if Msgs.WebMessageAsString = 'ctrlp' then
+    begin
+    //  PostMessage(Application.Handle, WM_USER + 99, 0, 0);
+      if Assigned(FCtrlPEvent) then
+        FCtrlPEvent(Self);
+    end;
 
 //    Msgs.WebMessageAsJson;
   finally

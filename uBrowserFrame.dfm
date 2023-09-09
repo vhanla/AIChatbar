@@ -25636,6 +25636,7 @@ object BrowserFrame: TBrowserFrame
     OnWebMessageReceived = WVBrowser1WebMessageReceived
     OnWebResourceResponseReceived = WVBrowser1WebResourceResponseReceived
     OnDOMContentLoaded = WVBrowser1DOMContentLoaded
+    OnGetCookiesCompleted = WVBrowser1GetCookiesCompleted
     Left = 104
     Top = 232
   end
