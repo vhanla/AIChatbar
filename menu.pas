@@ -954,7 +954,13 @@ begin
     else
     begin
       mainBrowser.Show;
-      FocusCurrentBrowser;
+      if GetForegroundWindow <> mainBrowser.Handle then
+      begin
+        SetForegroundWindow(mainBrowser.Handle);
+        FocusCurrentBrowser;
+      end
+      else
+        FocusCurrentBrowser;
     end;
   end;
 end;
