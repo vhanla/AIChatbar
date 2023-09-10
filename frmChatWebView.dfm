@@ -2,10 +2,9 @@ object mainBrowser: TmainBrowser
   Left = 0
   Top = 0
   AlphaBlendValue = 248
-  BorderStyle = bsNone
   Caption = 'Chat'
-  ClientHeight = 728
-  ClientWidth = 509
+  ClientHeight = 689
+  ClientWidth = 493
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,15 +17,15 @@ object mainBrowser: TmainBrowser
   OnPaint = FormPaint
   OnShow = FormShow
   DesignSize = (
-    509
-    728)
+    493
+    689)
   TextHeight = 15
   object CardPanel1: TCardPanel
     AlignWithMargins = True
     Left = 0
     Top = 0
-    Width = 509
-    Height = 728
+    Width = 493
+    Height = 689
     Margins.Left = 0
     Margins.Top = 0
     Margins.Right = 0
@@ -34,22 +33,25 @@ object mainBrowser: TmainBrowser
     Align = alClient
     Caption = 'CardPanel1'
     TabOrder = 0
+    ExplicitWidth = 509
+    ExplicitHeight = 728
   end
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 509
+    Width = 493
     Height = 20
     Anchors = [akLeft, akTop, akRight]
     BevelOuter = bvNone
     Caption = 'Panel1'
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
+    ExplicitWidth = 509
     DesignSize = (
-      509
+      493
       20)
     object lblPin: TLabel
-      Left = 424
+      Left = 408
       Top = 8
       Width = 12
       Height = 15
@@ -62,8 +64,8 @@ object mainBrowser: TmainBrowser
       Font.Name = 'Segoe UI'
       Font.Style = []
       ParentFont = False
-      Visible = False
       OnClick = lblPinClick
+      ExplicitLeft = 424
     end
   end
   object Timer1: TTimer

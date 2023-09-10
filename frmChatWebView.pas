@@ -2,11 +2,12 @@
 
 interface
 
-{$I ProjectDefines.inc}
+{.$I ProjectDefines.inc}
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.WinXPanels,
+  Net.HttpClient,
   uWVLoader, uWVCoreWebView2Args, JvComponentBase, JvAppEvent, Vcl.StdCtrls {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
 
 const
@@ -29,6 +30,9 @@ type
     procedure Timer1Timer(Sender: TObject);
     procedure tmrRamUsageTimer(Sender: TObject);
     procedure lblPinClick(Sender: TObject);
+
+    procedure WMNCHitTest(var Message: TWMNCHitTest); message WM_NCHITTEST;
+    procedure WMNCCalcSize(var Message: TWMNCCalcSize); message WM_NCCALCSIZE;
   private
     { Private declarations }
     FBingID: Cardinal;
@@ -57,6 +61,7 @@ type
     function CreateNewSite(const Id: Integer; const url, ua: string): Integer;
 
     procedure CtrlPEvent(Sender: TObject);
+    function GetGPTCookies: TCookieManager;
   end;
 
 var
@@ -67,7 +72,7 @@ implementation
 {$R *.dfm}
 
 uses
-  uBrowserCard, functions, menu;
+  uBrowserCard, functions, menu, frmTaskGPT;
 
 { TForm1 }
 
@@ -102,6 +107,9 @@ begin
   Result := CardID;
   TempNewCard.CreateBrowser(url, ua);
   TempNewCard.CardCtrlPEvent := CtrlPEvent;
+
+  //we need chatgpt for other cool things, just let the Card browser created knows it is chatgpt
+  TempNewCard.IsChatGPT := url.Contains('https://chat.openai.com');
 end;
 
 
@@ -117,7 +125,7 @@ begin
   {$IFDEF EXPERIMENTAL}
     {$I experimental.create.inc}
   {$ELSE}
-    EnableBlur(Handle);
+//    EnableBlur(Handle);
   {$IFEND}
 end;
 
@@ -137,8 +145,9 @@ begin
   else
   begin
     if SystemUsesLightTheme then
-      Canvas.Brush.Handle := CreateSolidBrushWithAlpha($dddddd, 200)    else
-      Canvas.Brush.Handle := CreateSolidBrushWithAlpha($222222, 200);
+      Canvas.Brush.Handle := CreateSolidBrushWithAlpha($dddddd, 200)
+    else
+      Canvas.Brush.Handle := CreateSolidBrushWithAlpha($000000, 200);
   end;
   Canvas.FillRect(Rect(0,0,Width,Height));
 end;
@@ -152,6 +161,21 @@ begin
     begin
 //      EnableButtonPnl;
     end;
+end;
+
+function TmainBrowser.GetGPTCookies: TCookieManager;
+var
+  I: Integer;
+begin
+  Result := nil;
+  for I := 0 to CardPanel1.CardCount - 1 do
+  begin
+    if TBrowserCard(CardPanel1.Cards[I]).IsChatGPT then
+    begin
+      Result := TBrowserCard(CardPanel1.Cards[I]).Cookies;
+      Break;
+    end;
+  end;
 end;
 
 function TmainBrowser.GetNextCardID: cardinal;
@@ -262,6 +286,64 @@ begin
       TBrowserCard(CardPanel1.Cards[i]).NotifyParentWindowPositionChanged;
       inc(i);
     end;
+end;
+
+procedure TmainBrowser.WMNCCalcSize(var Message: TWMNCCalcSize);
+var
+  LResizePadding: Integer;
+  LTitleBarHeight: Integer;
+begin
+  inherited;
+
+  LResizePadding := GetSystemMetrics(SM_CYSIZEFRAME) +
+                GetSystemMetrics(SM_CXPADDEDBORDER);
+
+  if BorderStyle = bsNone then Exit;
+
+  LTitleBarHeight := GetSystemMetrics(SM_CYCAPTION);
+
+  if WindowState = TWindowState.wsNormal then
+    Inc(LTitleBarHeight, LResizePadding);
+
+  Dec(Message.CalcSize_Params.rgrc[0].Top, LTitleBarHeight + 1);
+
+end;
+
+procedure TmainBrowser.WMNCHitTest(var Message: TWMNCHitTest);
+var
+  LResizePadding: Integer;
+  LIsResizable: Boolean;
+begin
+  inherited;
+  LResizePadding := GetSystemMetrics(SM_CYSIZEFRAME) +
+                GetSystemMetrics(SM_CXPADDEDBORDER);
+
+  LIsResizable := (WindowState = TWindowState.wsNormal) and
+    (BorderStyle in [bsSizeable, bsSizeToolWin]);
+
+  if LIsResizable and (Message.YPos - BoundsRect.Top <= LResizePadding) then
+  begin
+    if Message.XPos - BoundsRect.Left <= 2 * LResizePadding then
+      Message.Result := HTTOPLEFT
+    else if BoundsRect.Right - Message.XPos <= 2 * LResizePadding then
+      Message.Result := HTTOPRIGHT
+    else
+      Message.Result := HTTOP;
+  end;
+  // to block resizing cursors also resizing itself
+  {with Message do
+  begin
+    if (Result = HTBOTTOM)
+    or (Result = HTBOTTOMLEFT)
+    or (Result = HTBOTTOMRIGHT)
+    or (Result = HTLEFT)
+    or (Result = HTRIGHT)
+    or (Result = HTTOP)
+    or (Result = HTTOPLEFT)
+    or (Result = HTTOPRIGHT)
+    then Result := HTBORDER;
+
+  end;}
 end;
 
 procedure TmainBrowser.WVInitializedMsg(var aMessage: TMessage);
