@@ -7,7 +7,7 @@ uses
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   uWVBrowserBase, uWVBrowser, uWVWinControl, uWVWindowParent, uWVTypeLibrary, uWVTypes,
   uChildForm, uWVCoreWebView2Args, uWVCoreWebView2Deferral, Skia, Skia.Vcl,
-  Vcl.ExtCtrls, Winapi.TlHelp32, Winapi.PsAPI;
+  Vcl.ExtCtrls, Winapi.TlHelp32, Winapi.PsAPI, Net.HttpClient;
 
 type
   TBrowserTitleEvent = procedure(Sender: TObject; const aTitle : string) of object;
@@ -51,6 +51,7 @@ type
     FTimeout: Integer;
     FMemoryUsage: Int64;
     FCtrlPEvent: TNotifyEvent;
+    FCookies: TCookieManager;
     function GetMemoryUsage: Int64;
   protected
     FGetHeaders        : boolean;
@@ -84,6 +85,7 @@ type
     property  DisableCSP           : Boolean                                   read FDisableCSP            write FDisableCSP;
     property  MemoryUsage          : Int64                                     read GetMemoryUsage;
     property  CtrlPEvent           : TNotifyEvent read FCtrlPEvent write FCtrlPEvent;
+    property  Cookies              : TCookieManager read FCookies write FCookies;
   end;
 
 implementation
@@ -106,6 +108,7 @@ begin
   FOnBrowserTitleChange  := nil;
   FHeaders := TStringList.Create;
   FTimeOut := 3; // 3 seconds
+  FCookies := TCookieManager.Create;
 end;
 
 procedure TBrowserFrame.CreateAllHandles;
@@ -125,6 +128,8 @@ end;
 
 destructor TBrowserFrame.Destroy;
 begin
+  FCookies.Free;
+
   if assigned(FDeferral) then
     FreeAndNil(FDeferral);
 
@@ -273,11 +278,11 @@ begin
     TempCookieList := TCoreWebView2CookieList.Create(aCookieList);
     TempCookie := TCoreWebView2Cookie.Create(nil);
 
+    FCookies.Clear;
     for I := 0 to TempCookieList.Count - 1 do
     begin
       TempCookie.BaseIntf := TempCookieList.Items[I];
-      TempCookie.Name;
-      TempCookie.Value;
+      Cookies.AddServerCookie(TempCookie.Name + '=' + TempCookie.Value, PChar('https://'+TempCookie.Domain));
     end;
 
   finally
