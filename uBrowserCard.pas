@@ -4,13 +4,16 @@ interface
 
 uses
   Winapi.Windows, System.Classes, Winapi.Messages, Vcl.ComCtrls, Vcl.Controls,
-  Vcl.Forms, System.SysUtils, uBrowserFrame, uWVCoreWebView2Args, Vcl.WinXPanels;
+  Vcl.Forms, System.SysUtils, uBrowserFrame, uWVCoreWebView2Args, Vcl.WinXPanels,
+  Net.HttpClient;
 
 type
   TBrowserCard = class(TCard)
   private
     FCardCtrlPEvent: TNotifyEvent;
+    FIsChatGPT: Boolean;
     function GetRamUsage: Int64;
+    function GetCookies: TCookieManager;
   protected
     FBrowserFrame: TBrowserFrame;
     FCardID: Cardinal;
@@ -35,6 +38,8 @@ type
     property Initialized       : boolean    read GetInitialized;
     property MemoryUsage       : Int64      read GetRamUsage;
     property CardCtrlPEvent    : TNotifyEvent read FCardCtrlPEvent write FCardCtrlPEvent;
+    property Cookies           : TCookieManager   read GetCookies;
+    property IsChatGPT         : Boolean read FIsChatGPT write FIsChatGPT;
   end;
 
 implementation
@@ -58,6 +63,7 @@ begin
   FCardID       := aCardID;
   Caption       := aCaption;
   FBrowserFrame := nil;
+  FIsChatGPT    := False;
 end;
 
 procedure TBrowserCard.CreateBrowser(
@@ -89,6 +95,8 @@ begin
     FCardCtrlPEvent(Self);
 end;
 
+
+
 procedure TBrowserCard.FocusBrowser;
 begin
   if (FBrowserFrame <> nil) then
@@ -113,6 +121,13 @@ begin
   FBrowserFrame.UA := aUA;
   FBrowserFrame.Homepage := aHomepage;
   FBrowserFrame.CtrlPEvent := CtrlPEvent;
+end;
+
+function TBrowserCard.GetCookies: TCookieManager;
+begin
+  Result := nil;
+  if (FBrowserFrame <> nil) then
+    Result := FBrowserFrame.Cookies;
 end;
 
 function TBrowserCard.GetInitialized: Boolean;
