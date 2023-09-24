@@ -389,10 +389,13 @@ var
 begin
 // let's close all webview2 instances
   if Assigned(mainBrowser.CardPanel1) then
-  for I := 0 to mainBrowser.CardPanel1.CardCount - 1 do
   begin
-    TempCard := TBrowserCard(mainBrowser.CardPanel1.Cards[I]);
-    TempCard.Free;
+    for I := 0 to mainBrowser.CardPanel1.CardCount - 1 do
+    begin
+      TempCard := TBrowserCard(mainBrowser.CardPanel1.Cards[I]);
+      TempCard.Free;
+    end;
+    mainBrowser.Visible := False;
   end;
 
   inherited;
