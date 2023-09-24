@@ -95,6 +95,9 @@ type
     procedure RestoreRequest(var message: TMessage); message WM_USER + $1000;
     // restore after resolution change
     procedure WMDisplayChange(var message: TMessage); message WM_DISPLAYCHANGE;
+    // windows session on end
+    procedure WMQueryEndSession(var message: TWMQueryEndSession); message WM_QUERYENDSESSION;
+    procedure WMEndSession(var message: TWMEndSession); message WM_ENDSESSION;
   protected
     procedure WMShellHook(var Msg: TMessage);
     procedure WndMethod(var Msg: TMessage);
@@ -376,6 +379,29 @@ begin
 //  imgSettings.Top := imgMenu.Top + 64 * 2;
 //  imgClaude.Top := imgMenu.Top + 64 * 3;
   inherited;
+end;
+
+// The Windows session is ending (shutdown or reboot)
+procedure TfrmMenu.WMEndSession(var message: TWMEndSession);
+var
+  TempCard: tbrowsercard;
+  I: Integer;
+begin
+// let's close all webview2 instances
+  if Assigned(mainBrowser.CardPanel1) then
+  for I := 0 to mainBrowser.CardPanel1.CardCount - 1 do
+  begin
+    TempCard := TBrowserCard(mainBrowser.CardPanel1.Cards[I]);
+    TempCard.Free;
+  end;
+
+  inherited;
+end;
+
+// The Windows session handler asks for session ending confirmation
+procedure TfrmMenu.WMQueryEndSession(var message: TWMQueryEndSession);
+begin
+  message.Result := 1; // allow the shutdown/reboot
 end;
 
 procedure TfrmMenu.WMShellHook(var Msg: TMessage);
