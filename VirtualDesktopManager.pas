@@ -623,6 +623,10 @@ begin
       begin
         //22000 and later using IVirtualDesktopManagerInternalW11 instead
         fEnabled := CheckError(fISP.QueryService(CLSID_VirtualDesktopManagerInternal, IID_VirtualDesktopManagerInternal_22000, fIVDMI11));
+        if not fEnabled then
+          fEnabled := CheckError(fISP.QueryService(CLSID_VirtualDesktopManagerInternal, IID_VirtualDesktopManagerInternal_22621, fIVDMI11));
+        if not fEnabled then
+          fEnabled := CheckError(fISP.QueryService(CLSID_VirtualDesktopManagerInternal, IID_VirtualDesktopManagerInternal_22631, fIVDMI11));
         fEnabled := fEnabled and //
           CheckError(fISP.QueryService(CLSID_VirtualNotificationService, IID_VirtualNotificationService, fIVNS)) and //
           CheckError(fISP.QueryService(CLSID_ApplicationViewCollection, IID_ApplicationViewCollection, fIAVC)) and //

@@ -46,6 +46,8 @@ const
   IID_VirtualDesktopManagerInternal_10240: TGUID = '{AF8DA486-95BB-4460-B3B7-6E7A6B2962B5}'; // build 10240 or later
   IID_VirtualDesktopManagerInternal_10130: TGUID = '{EF9F1A6C-D3CC-4358-B712-F84B635BEBE7}'; // build 10130 or later
   IID_VirtualDesktopManagerInternal_22000: TGUID = '{B2F925B9-5A0F-4D2E-9F4D-2B1507593C10}'; // build 22000 or later
+  IID_VirtualDesktopManagerInternal_22621: TGUID = '{A3175F2D-239C-4BD2-8AA0-EEBA8B0B138E}'; // build 22621 or later
+  IID_VirtualDesktopManagerInternal_22631: TGUID = '{4970BA3D-FD4E-4647-BEA3-D89076EF4B9C}'; // build 22631 or later
 //
   IID_VirtualDesktop:     TGUID = '{FF72FFDD-BE7E-43FC-9C03-AD81681E88E4}';
   IID_VirtualDesktopW11:  TGUID = '{536d3495-b208-4cc9-ae26-de8111275bf8}';
@@ -265,7 +267,7 @@ type
   end;
 
   IVirtualDesktopManagerInternalW11 = interface(IUnknown)
-  ['{B2F925B9-5A0F-4D2E-9F4D-2B1507593C10}'] // 22000 or later
+//  ['{B2F925B9-5A0F-4D2E-9F4D-2B1507593C10}'] // 22000 or later
     function GetCount(pCount: PUINT): HRESULT; stdcall; // ok
     function MoveViewToDesktop(View: IApplicationViewW11; Desktop: IVirtualDesktopW11): HRESULT; stdcall; // ok
     function CanViewMoveDesktops(View: IApplicationViewW11; pfCanViewMoveDesktops: PBOOL): HRESULT; stdcall; // build 10240 or later // not tested
