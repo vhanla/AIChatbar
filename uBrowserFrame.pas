@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   uWVBrowserBase, uWVBrowser, uWVWinControl, uWVWindowParent, uWVTypeLibrary, uWVTypes,
-  uChildForm, uWVCoreWebView2Args, uWVCoreWebView2Deferral, Skia, Skia.Vcl,
+  uChildForm, uWVCoreWebView2Args, uWVCoreWebView2Deferral, Skia,
   Vcl.ExtCtrls, Winapi.TlHelp32, Winapi.PsAPI, Net.HttpClient;
 
 type
@@ -279,6 +279,8 @@ begin
     TempCookie := TCoreWebView2Cookie.Create(nil);
 
     FCookies.Clear;
+    var counter := TempCookieList.Count;
+    if counter > 0 then
     for I := 0 to TempCookieList.Count - 1 do
     begin
       TempCookie.BaseIntf := TempCookieList.Items[I];
