@@ -24,7 +24,8 @@ uses
   uChildForm in 'uChildForm.pas',
   settingsHelper in 'settingsHelper.pas',
   frameEditSite in 'frameEditSite.pas' {Frame1: TFrame},
-  frmTaskGPT in 'frmTaskGPT.pas' {taskForm};
+  frmTaskGPT in 'frmTaskGPT.pas' {taskForm},
+  functions.rawinput in 'functions.rawinput.pas';
 
 {$R *.res}
 
