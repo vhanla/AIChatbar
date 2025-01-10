@@ -14,9 +14,9 @@ uses
   Dialogs, jpeg, ExtCtrls, Menus, StdCtrls, registry,
   frmChatWebView, System.ImageList, Vcl.ImgList, VirtualDesktopManager,
   AnyiQuack, AQPSystemTypesAnimations, uWVCoreWebView2Args,
-  Vcl.Imaging.pngimage, Skia, Skia.Vcl, Generics.Collections, Winapi.ShellAPI,
+  Vcl.Imaging.pngimage, Skia, Generics.Collections, Winapi.ShellAPI,
   settingsHelper, JvComponentBase, JvAppHotKey, JvAppEvent, madExceptVcl,
-  System.Actions, Vcl.ActnList {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
+  System.Actions, functions.rawinput, Vcl.ActnList {$IFDEF EXPERIMENTAL} {$I experimental.uses.inc} {$IFEND};
 
 const
   APP_VERSION = '1.0.0';
@@ -105,6 +105,10 @@ type
 
     procedure CurrentDesktopChanged(Sender: TObject; OldDesktop, NewDesktop: TVirtualDesktop);
     procedure CurrentDesktopChangedW11(Sender: TObject; OldDesktop, NewDesktop: TVirtualDesktopW11);
+
+    procedure WndProc(var Msg: TMessage); override;
+    procedure RegisterRawInput;
+    procedure ProcessRawInput(var Message: TMessage);
   public
     { Public declarations }
     FFirstTimeBrowser: Boolean;
@@ -128,6 +132,8 @@ type
     procedure FocusCurrentBrowser;
     procedure SetDarkMode(Enable: Boolean = True);
     procedure LoadSites;
+
+    procedure HotSpotAction(MousePos: TPoint);
     property OnMenuArea: Boolean read FOnMenuArea write FOnMenuArea;
   end;
 
@@ -206,9 +212,21 @@ function  DeregisterShellHookWindow( hWnd : HWND) : BOOL;  stdcall;
 
 
 
+procedure TfrmMenu.RegisterRawInput;
+var
+  Rid: RAWINPUTDEVICE;
+begin
+  Rid.usUsagePage := HID_USAGE_PAGE_GENERIC; // Generic Desktop Controls
+  Rid.usUsage := HID_USAGE_GENERIC_MOUSE; // Mouse
+  Rid.dwFlags := RIDEV_INPUTSINK; // Receive input even if not focused
+  Rid.hwndTarget := Handle; // Target this window
+
+  if not RegisterRawInputDevices(@Rid, 1, SizeOf(RAWINPUTDEVICE)) then
+    raise Exception.Create('Failed to register raw input.');
+end;
+
 procedure TfrmMenu.RestoreRequest(var message: TMessage);
 begin
-  // mostramos si está oculto
   frmMenu.Show;
 end;
 
@@ -440,9 +458,113 @@ begin
     WMShellHook(Msg);
 end;
 
+procedure TfrmMenu.WndProc(var Msg: TMessage);
+begin
+  if Msg.Msg = WM_SETTINGCHANGE then
+  begin
+    if Msg.WParam = WPARAM(SPI_SETFLATMENU) then // menues change coloring on light theme or dark theme
+    begin
+      { TODO:  Update Tray Icon maybe }
+
+      if not SystemUsesLightTheme then
+      begin
+      { TODO:  Dark Mode }
+      end
+      else
+      begin
+      { TODO:  Light Mode }
+      end;
+    end;
+
+    { TODO : Update icons positioning }
+  end;
+
+  if Msg.Msg = WM_INPUT then
+    ProcessRawInput(Msg);
+
+  inherited WndProc(Msg);
+end;
+
 procedure TfrmMenu.HideMenu(Sender: TObject);
 begin
   tmrHideMenu.Enabled := true;
+end;
+
+procedure TfrmMenu.HotSpotAction(MousePos: TPoint);
+var
+  TypesAniPlugin: TAQPSystemTypesAnimations;
+begin
+  if Settings.DisableOnFullScreenDirectX and DetectFullScreen3D then Exit;
+  if Settings.DisableOnFullScreen and DetectFullScreenApp(GetForegroundWindow) then Exit;
+  if FPopupMenuVisible then Exit;
+
+  if (GetAsyncKeyState(VK_LBUTTON) = 0) and (GetAsyncKeyState(VK_RBUTTON) = 0) then
+  begin
+    case Settings.BarPosition of
+      ABE_LEFT:
+      begin
+        if (MousePos.X <= GetLeftMost + 1) then
+        begin
+          ShowWindow(Handle, SW_SHOWNOACTIVATE);
+          if not OnMenuArea then
+          begin
+            OnMenuArea := True;
+            NewWidth := MenuTargetWidth;
+            NewLeft := GetLeftMost - 1;
+            NewAlphaBlend := MAXBYTE;
+            ShowMenuAnimation(ABE_LEFT);
+          end;
+        end
+        else if (MousePos.X > frmMenu.Left + frmMenu.Width) and (tmrHideMenu.Enabled = False) then
+        begin
+          if OnMenuArea then
+          begin
+            OnMenuArea := False;
+            NewWidth := 1;
+            NewLeft := GetLeftMost;
+            NewAlphaBlend := 0;
+            ShowMenuAnimation(ABE_LEFT, False);
+          end;
+        end;
+
+      end;
+      ABE_TOP:
+      begin
+
+      end;
+      ABE_RIGHT:
+      begin
+        if (MousePos.X >= GetRightMost - 1) then
+        begin
+          ShowWindow(Handle, SW_SHOWNOACTIVATE);
+          if not OnMenuArea then
+          begin
+            OnMenuArea := True;
+            NewWidth := MenuTargetWidth;
+            NewLeft := Screen.WorkAreaWidth - NewWidth +1;
+            NewAlphaBlend := MAXBYTE;
+            ShowMenuAnimation(ABE_RIGHT);
+          end;
+        end
+        else if (MousePos.X < Left) and (tmrHideMenu.Enabled = False) then
+        begin
+          if OnMenuArea then
+          begin
+            OnMenuArea := False;
+            NewWidth := 1;
+            NewLeft := Screen.WorkAreaWidth - NewWidth;
+            NewAlphaBlend := 0;
+            ShowMenuAnimation(ABE_RIGHT, False);
+          end;
+        end;
+
+      end;
+      ABE_BOTTOM:
+      begin
+
+      end;
+    end;
+  end;
 end;
 
 procedure TfrmMenu.IconMouseHover(Sender: TObject);
@@ -728,6 +850,7 @@ begin
   else
     DesktopManager.OnCurrentDesktopChanged := CurrentDesktopChanged;
 
+  RegisterRawInput;
 end;
 
 procedure TfrmMenu.FormDestroy(Sender: TObject);
@@ -1134,6 +1257,52 @@ begin
     pmCardCloseSite.Enabled := True
   else
     pmCardCloseSite.Enabled := False;
+end;
+
+procedure TfrmMenu.ProcessRawInput(var Message: TMessage);
+var
+  DataSize: UINT;
+  lRawInput: Pointer;
+  lRaw: ^RAWINPUT;
+  Header: RAWINPUTHEADER;
+  Mouse: RAWMOUSE;
+
+  Cur: THandle;
+  MPos: TPoint;
+
+begin
+  if GetRawInputData(HRAWINPUT(Message.lParam), RID_INPUT, nil, DataSize, SizeOf(Header)) = 0 then
+  begin
+    GetMem(lRawInput, DataSize);
+    try
+      if GetRawInputData(HRAWINPUT(Message.LParam), RID_INPUT, lRawInput, DataSize, SizeOf(Header)) <> UINT(-1) then
+      begin
+        lRaw := lRawInput;
+        if lRaw^.Header.dwType = RIM_TYPEMOUSE then
+        begin
+          Mouse := lRaw^.mouse;
+
+          Cur := 0;
+          try
+            if not Windows.GetCursorPos(MPos) then
+              MPos := Point(120, 120);
+            Cur := GetForegroundWindow; // it will likely fail on windows locked (Win+L)
+          except
+            Cur := 0;
+          end;
+
+          if Cur <> 0 then
+          begin
+            HotSpotAction(MPos);
+          end;
+
+        end;
+
+      end;
+    finally
+      FreeMem(lRawInput);
+    end;
+  end;
 end;
 
 end.

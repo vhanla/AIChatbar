@@ -140,6 +140,7 @@ object frmMenu: TfrmMenu
       'svg>'
   end
   object tmrMenu: TTimer
+    Enabled = False
     Interval = 250
     OnTimer = tmrMenuTimer
     Left = 568
