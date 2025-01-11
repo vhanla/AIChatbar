@@ -1169,6 +1169,15 @@ begin
     vicon.Parent := Self;
     vicon.Svg.Source := Settings.Sites[I].Icon;
     vicon.Svg.GrayScale := True;
+    if Assigned(mainBrowser) then
+    for var J := 0 to mainBrowser.CardPanel1.CardCount - 1 do
+    begin
+      if mainBrowser.CardPanel1.Cards[J].Tag = Settings.Sites[I].Id then
+      begin
+        vIcon.Svg.GrayScale := False;
+        Break;
+      end;
+    end;
     vicon.Tag := I;
     vicon.Left := MenuTargetIconSpan;
     vicon.Top := sPos + (MenuTargetIconDimension+MenuTargetIconSpan)*I;
