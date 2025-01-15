@@ -25,7 +25,11 @@ uses
   settingsHelper in 'settingsHelper.pas',
   frameEditSite in 'frameEditSite.pas' {Frame1: TFrame},
   frmTaskGPT in 'frmTaskGPT.pas' {taskForm},
-  functions.rawinput in 'functions.rawinput.pas';
+  functions.rawinput in 'functions.rawinput.pas',
+  frmLauncher in 'frmLauncher.pas' {formLauncher},
+  HTML2MarkDown in 'HTML2MarkDown.pas',
+  SynSearchEdit in 'SynSearchEdit.pas',
+  functions.windowfocus in 'functions.windowfocus.pas';
 
 {$R *.res}
 
@@ -41,6 +45,7 @@ begin
   Application.CreateForm(TfrmSetting, frmSetting);
   Application.CreateForm(TmainBrowser, mainBrowser);
   Application.CreateForm(TtaskForm, taskForm);
+  Application.CreateForm(TformLauncher, formLauncher);
   Application.Run;
 
 end.
