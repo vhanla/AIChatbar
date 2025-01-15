@@ -102,4 +102,13 @@ object taskForm: TtaskForm
       TabOrder = 1
     end
   end
+  object ActionList1: TActionList
+    Left = 280
+    Top = 160
+    object actHideTask: TAction
+      Caption = 'actHideTask'
+      ShortCut = 27
+      OnExecute = actHideTaskExecute
+    end
+  end
 end

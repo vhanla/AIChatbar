@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.WinXCtrls,
-  System.Net.HttpClient;
+  System.Net.HttpClient, System.Actions, Vcl.ActnList;
 
 type
   TtaskForm = class(TForm)
@@ -18,9 +18,12 @@ type
     Button1: TButton;
     ToggleSwitch1: TToggleSwitch;
     Label5: TLabel;
+    ActionList1: TActionList;
+    actHideTask: TAction;
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure actHideTaskExecute(Sender: TObject);
   private
     FBearer: string;
     FCookies: TCookieManager;
@@ -77,6 +80,11 @@ const
     "about_user_message": "Give me answers only in json format, not other formatting allowed, never answer in other format.",
     "about_model_message": "You're an expert ..."
   }
+
+procedure TtaskForm.actHideTaskExecute(Sender: TObject);
+begin
+  Hide;
+end;
 
 function TtaskForm.AskGPT(const query: string): Boolean;
 begin
