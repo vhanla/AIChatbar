@@ -250,4 +250,11 @@ object frmMenu: TfrmMenu
       OnExecute = actSwitchAIChatsExecute
     end
   end
+  object JvApplicationHotKey3: TJvApplicationHotKey
+    HotKey = 49184
+    OnHotKey = JvApplicationHotKey3HotKey
+    OnHotKeyRegisterFailed = JvApplicationHotKey3HotKeyRegisterFailed
+    Left = 384
+    Top = 152
+  end
 end
