@@ -13,7 +13,10 @@ uses
   SynEditTypes, Vcl.AppEvnts, SynHighlighterHtml, SynHighlighterCpp,
   SynHighlighterPas, SynHighlighterJSON, SynHighlighterPython,
   SynHighlighterBat, SynHighlighterJScript,
-  SynEditCodeFolding, SynHighlighterCS, Vcl.ComCtrls;
+  SynEditCodeFolding, SynHighlighterCS, Vcl.ComCtrls, ACL.UI.Controls.DropDown,
+  ACL.UI.Controls.ComboBox, ACL.UI.Controls.ImageComboBox, System.ImageList,
+  Vcl.ImgList, ACL.UI.ImageList, Vcl.VirtualImageList, Vcl.BaseImageCollection,
+  Vcl.ImageCollection, JvExComCtrls, JvStatusBar, Vcl.ExtCtrls;
 
 type
   TSearchBox = class(Vcl.WinXCtrls.TSearchBox)
@@ -44,7 +47,12 @@ type
     SynPasSyn1: TSynPasSyn;
     SynCppSyn1: TSynCppSyn;
     SynMultiSyn1: TSynMultiSyn;
-    StatusBar1: TStatusBar;
+    ACLImageComboBox1: TACLImageComboBox;
+    ImageCollection1: TImageCollection;
+    VirtualImageList1: TVirtualImageList;
+    chkDefaultBrowser: TCheckBox;
+    JvStatusBar1: TJvStatusBar;
+    Panel1: TPanel;
     procedure FormCreate(Sender: TObject);
     procedure actHideLauncherExecute(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -67,7 +75,7 @@ var
 implementation
 
 uses
-  functions, pngimage, functions.windowfocus, ShellApi, uChildForm;
+  functions, pngimage, functions.windowfocus, ShellApi, uChildForm, System.NetEncoding, frmChatWebView;
 
 {$R *.dfm}
 
@@ -173,6 +181,7 @@ begin
   SearchEdit1.ExpandedHeight := ClientHeight - SearchEdit1.Height;
   SearchEdit1.RightEdge := 0;
   SearchEdit1.Highlighter := SynMultiSyn1;
+  SearchEdit1.TabOrder := 0;
 end;
 
 procedure TformLauncher.FormDestroy(Sender: TObject);
@@ -193,12 +202,53 @@ begin
   TWindowFocusHelper.FocusWindow(Handle);
 end;
 
+function PassMultilineTextToURLParam(const MultilineText: string): string;
+begin
+  Result := TNetEncoding.URL.Encode(MultilineText);
+end;
+
 procedure TformLauncher.Launch(Sender: TObject);
 var
   TempChildForm : TChildForm;
+  queryStr: string;
+  formattedText: string;
 begin
-  TempChildForm := TChildForm.Create(Self, 'https://chatgpt.com/?q='+SearchEdit1.Text+'&ref=ext&model=auto&temporary-chat=true');
-  TempChildForm.Show;
+  formattedText := PassMultilineTextToURLParam(SearchEdit1.Text);
+  case ACLImageComboBox1.SelectedItem.Tag of
+    0:
+    begin
+      queryStr := 'https://chatgpt.com/?q='+formattedText+'&ref=ext&model=auto';
+    end;
+    1:
+    begin
+      queryStr := 'https://chatgpt.com/?q='+formattedText+'&ref=ext&model=auto&temporary-chat=true';
+    end;
+    2:
+    begin
+      queryStr := 'https://claude.ai/new?q='+formattedText;
+    end;
+    3:
+    begin
+      queryStr := 'https://www.perplexity.ai/search?q='+formattedText;
+    end;
+    4:
+    begin
+      queryStr := 'https://huggingface.co/chat?q='+formattedText;
+    end;
+    5:
+    begin
+      queryStr := 'https://you.com/search?q='+formattedText+'&fromSearchBar=true&tbm=youchat';
+    end;
+  end;
+//  if Assigned(mainBrowser) and (mainBrowser.CardPanel1.CardCount > 0) then
+  if not chkDefaultBrowser.Checked then
+  begin
+    TempChildForm := TChildForm.Create(Self, queryStr);
+    TempChildForm.Show;
+  end
+  else
+    ShellExecute(0, 'OPEN', PChar(queryStr), nil, nil, SW_SHOW);
+  Hide;
 end;
 
 procedure TformLauncher.PasteProcessed(Sender: TObject; var Key: Word;
