@@ -845,14 +845,14 @@ begin
   JvApplicationHotKey1.WindowsKey := Settings.RequireWinKey;
   JvApplicationHotKey1.Active := True;
 
-  // TaskGPT Global Hotkey | Win+F11 hard code for now
-  JvApplicationHotKey2.HotKey := TextToShortCut('F11');
-  JvApplicationHotKey2.WindowsKey := True;
+  // Task Global Hotkey
+  JvApplicationHotKey2.HotKey := TextToShortCut(Settings.TaskHotkey);
+  JvApplicationHotKey2.WindowsKey := Settings.RequireWinKeyTask;
   JvApplicationHotKey2.Active := True;
 
-  // FMX Launcher | Ctrl+Space hard code for now
-  //JvApplicationHotKey3.HotKey := TextToShortCut('Space');
-  JvApplicationHotKey3.WindowsKey := False;
+  // Launcher
+  JvApplicationHotKey3.HotKey := TextToShortCut(Settings.LauncherHotkey);
+  JvApplicationHotKey3.WindowsKey := Settings.RequireWinKeyLauncher;
   JvApplicationHotKey3.Active := True;
 
   // Virtual Desktop Aware (Win10/11)

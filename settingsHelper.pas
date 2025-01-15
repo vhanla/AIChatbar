@@ -56,7 +56,11 @@ type
     FDisableOnFullScreen: Boolean;
     FDisableOnFullScreenDirectX: Boolean;
     FGlobalHotkey: string;
+    FTaskHotkey: string;
+    FLauncherHotkey: string;
     FRequireWinkey: Boolean;
+    FRequireWinkeyTask: Boolean;
+    FRequireWinkeyLauncher: Boolean;
     FProxy: string;
     FBarPosition: Integer; //ABE_RIGHT
     FDarkMode: Boolean;
@@ -86,7 +90,11 @@ type
     property DisableOnFullScreen: Boolean read FDisableOnFullScreen write FDisableOnFullScreen;
     property DisableOnFullScreenDirectX: Boolean read FDisableOnFullScreenDirectX write FDisableOnFullScreenDirectX;
     property GlobalHotkey: string read FGlobalHotkey write FGlobalHotkey;
+    property TaskHotkey: string read FTaskHotkey write FTaskHotkey;
+    property LauncherHotkey: string read FLauncherHotkey write FLauncherHotkey;
     property RequireWinKey: Boolean read FRequireWinkey write FRequireWinkey;
+    property RequireWinKeyTask: Boolean read FRequireWinkeyTask write FRequireWinkeyTask;
+    property RequireWinKeyLauncher: Boolean read FRequireWinkeyLauncher write FRequireWinkeyLauncher;
     property Proxy: string read FProxy write FProxy;
     property BarPosition: Integer read FBarPosition write FBarPosition;
     property DarkMode: Boolean read FDarkMode write FDarkMode;
@@ -216,7 +224,11 @@ begin
     FDisableOnFullScreen := ini.ReadBool('settings', 'notonfs', True);
     FDisableOnFullScreenDirectX := ini.ReadBool('settings', 'notonfs3d', True);
     FGlobalHotkey := ini.ReadString('settings', 'hotkey', '');
+    FTaskHotkey := ini.ReadString('settings', 'taskhotkey', '');
+    FLauncherHotkey := ini.ReadString('settings', 'launcherhotkey', '');
     FRequireWinkey := ini.ReadBool('settings', 'requirewinkey', False);
+    FRequireWinkeyTask := ini.ReadBool('settings', 'requirewinkeytask', False);
+    FRequireWinkeyLauncher := ini.ReadBool('settings', 'requirewinkeylauncher', False);
     FProxy := ini.ReadString('settings', 'proxy', 'localhost:8080');
     FBarPosition := ini.ReadInteger('settings', 'position', ABE_RIGHT);
     FDarkMode := ini.ReadBool('settings', 'darkmode', True);
@@ -279,7 +291,11 @@ begin
     ini.WriteBool('settings', 'notonfs', FDisableOnFullScreen);
     ini.WriteBool('settings', 'notonfs3d', FDisableOnFullScreenDirectX);
     ini.WriteString('settings', 'hotkey', FGlobalHotkey);
+    ini.WriteString('settings', 'taskhotkey', FTaskHotkey);
+    ini.WriteString('settings', 'launcherhotkey', FLauncherHotkey);
     ini.WriteBool('settings', 'requirewinkey', FRequireWinkey);
+    ini.WriteBool('settings', 'requirewinkeytask', FRequireWinkeyTask);
+    ini.WriteBool('settings', 'requirewinkeylauncher', FRequireWinkeyLauncher);
     ini.WriteString('settings', 'proxy', FProxy);
     ini.WriteInteger('settings', 'position', FBarPosition);
     ini.WriteBool('settings', 'darkmode', FDarkMode);

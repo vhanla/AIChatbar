@@ -129,7 +129,7 @@ object frmSetting: TfrmSetting
     Top = 62
     Width = 641
     Height = 363
-    ActivePage = TabSheet5
+    ActivePage = TabSheet2
     Anchors = [akLeft, akTop, akRight, akBottom]
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -187,7 +187,7 @@ object frmSetting: TfrmSetting
           Left = 5
           Top = 5
           Width = 78
-          Height = -10
+          Height = 78
           Margins.Left = 5
           Margins.Top = 5
           Margins.Right = 5
@@ -219,30 +219,26 @@ object frmSetting: TfrmSetting
         end
         object ControlListButton1: TControlListButton
           AlignWithMargins = True
-          Left = -84
+          Left = 545
           Top = 25
           Width = 38
-          Height = -50
+          Height = 38
           Margins.Top = 25
           Margins.Bottom = 25
           Align = alRight
-          LinkHotColor = clHighlight
           Style = clbkToolButton
-          ExplicitLeft = 545
           ExplicitHeight = 8
         end
         object ControlListButton2: TControlListButton
           AlignWithMargins = True
-          Left = -40
+          Left = 589
           Top = 25
           Width = 37
-          Height = -50
+          Height = 38
           Margins.Top = 25
           Margins.Bottom = 25
           Align = alRight
-          LinkHotColor = clHighlight
           Style = clbkToolButton
-          ExplicitLeft = 589
           ExplicitHeight = 8
         end
       end
@@ -438,13 +434,13 @@ object frmSetting: TfrmSetting
         Left = 24
         Top = 166
         Width = 268
-        Height = 90
+        Height = 43
         Caption = 'Global Hotkey to Invoke'
         TabOrder = 7
         object JvGlobalHotKey: TJvHotKey
-          Left = 24
-          Top = 37
-          Width = 225
+          Left = 63
+          Top = 16
+          Width = 186
           Height = 21
           HotKey = 24699
           Modifiers = [hkShift, hkCtrl]
@@ -453,15 +449,75 @@ object frmSetting: TfrmSetting
           ParentColor = False
         end
         object chkWinKey: TCheckBox
-          Left = 24
-          Top = 64
-          Width = 71
+          Left = 11
+          Top = 16
+          Width = 46
           Height = 17
-          Caption = 'WinKey'
+          Caption = 'Win'
           Color = 2743985
           ParentColor = False
           TabOrder = 1
           OnClick = chkWinKeyClick
+        end
+      end
+      object GroupBox2: TGroupBox
+        Left = 24
+        Top = 215
+        Width = 268
+        Height = 43
+        Caption = 'Global Hotkey to Invoke Task'
+        TabOrder = 8
+        object JvHotKeyTask: TJvHotKey
+          Left = 63
+          Top = 16
+          Width = 186
+          Height = 21
+          HotKey = 24698
+          Modifiers = [hkShift, hkCtrl]
+          TabOrder = 0
+          OnChange = JvHotKeyTaskChange
+          ParentColor = False
+        end
+        object chkWinKeyTask: TCheckBox
+          Left = 11
+          Top = 16
+          Width = 46
+          Height = 17
+          Caption = 'Win'
+          Color = 2743985
+          ParentColor = False
+          TabOrder = 1
+          OnClick = chkWinKeyTaskClick
+        end
+      end
+      object GroupBox3: TGroupBox
+        Left = 24
+        Top = 258
+        Width = 268
+        Height = 43
+        Caption = 'Global Hotkey to Invoke Launcher'
+        TabOrder = 9
+        object JvHotKeyLauncher: TJvHotKey
+          Left = 63
+          Top = 16
+          Width = 186
+          Height = 21
+          HotKey = 49184
+          Modifiers = [hkCtrl, hkAlt]
+          TabOrder = 0
+          OnChange = JvHotKeyLauncherChange
+          ParentColor = False
+        end
+        object chkWinKeyLauncher: TCheckBox
+          Left = 11
+          Top = 16
+          Width = 46
+          Height = 17
+          Caption = 'Win'
+          Color = 2743985
+          ParentColor = False
+          TabOrder = 1
+          OnClick = chkWinKeyLauncherClick
         end
       end
     end

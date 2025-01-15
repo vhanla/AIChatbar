@@ -63,6 +63,12 @@ type
     lblSiteName: TLabel;
     ControlListButton1: TControlListButton;
     ControlListButton2: TControlListButton;
+    GroupBox2: TGroupBox;
+    JvHotKeyTask: TJvHotKey;
+    chkWinKeyTask: TCheckBox;
+    GroupBox3: TGroupBox;
+    JvHotKeyLauncher: TJvHotKey;
+    chkWinKeyLauncher: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -97,9 +103,15 @@ type
     procedure ControlList1ContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure DeleteSite1Click(Sender: TObject);
+    procedure JvHotKeyTaskChange(Sender: TObject);
+    procedure JvHotKeyLauncherChange(Sender: TObject);
+    procedure chkWinKeyTaskClick(Sender: TObject);
+    procedure chkWinKeyLauncherClick(Sender: TObject);
   private
     { Private declarations }
     fTempHotkey: TShortcut;
+    fTempHotkey2: TShortcut;
+    fTempHotkey3: TShortcut;
     fEditedSiteId: Integer;
     fSelectedIndex: Integer;
     procedure WMNCHitTest(var Message: TWMNCHitTest); message WM_NCHITTEST;
@@ -285,6 +297,17 @@ begin
   frmMenu.JvApplicationHotKey1.WindowsKey := chkWinKey.Checked;
   frmMenu.JvApplicationHotKey1.HotKey := JvGlobalHotKey.HotKey;
   frmMenu.JvApplicationHotKey1.Active := True;
+
+  fTempHotkey2 := JvHotKeyTask.HotKey;
+  frmMenu.JvApplicationHotKey2.WindowsKey := chkWinKeyTask.Checked;
+  frmMenu.JvApplicationHotKey2.HotKey := JvHotKeyTask.HotKey;
+  frmMenu.JvApplicationHotKey2.Active := True;
+
+  fTempHotkey3 := JvHotKeyLauncher.HotKey;
+  frmMenu.JvApplicationHotKey3.WindowsKey := chkWinKeyLauncher.Checked;
+  frmMenu.JvApplicationHotKey3.HotKey := JvHotKeyLauncher.HotKey;
+  frmMenu.JvApplicationHotKey3.Active := True;
+
   frmMenu.Settings.SaveSettings;
   Close;
 end;
@@ -351,6 +374,16 @@ begin
   frmMenu.Settings.RequireWinKey := chkWinKey.Checked;
 end;
 
+procedure TfrmSetting.chkWinKeyLauncherClick(Sender: TObject);
+begin
+  frmMenu.Settings.RequireWinKeyLauncher := chkWinKeyLauncher.Checked;
+end;
+
+procedure TfrmSetting.chkWinKeyTaskClick(Sender: TObject);
+begin
+  frmMenu.Settings.RequireWinKeyTask := chkWinKeyTask.Checked;
+end;
+
 procedure TfrmSetting.FillSettings(settings: TSettings);
 begin
   chkAutoHide.Checked := settings.AutoHide;
@@ -361,6 +394,10 @@ begin
   chkFSOff3D.Checked := settings.DisableOnFullScreenDirectX;
   JvGlobalHotKey.HotKey := TextToShortCut(settings.GlobalHotkey);
   chkWinKey.Checked := settings.RequireWinKey;
+  JvHotKeyTask.HotKey := TextToShortCut(settings.TaskHotkey);
+  chkWinKeyTask.Checked := settings.RequireWinKeyTask;
+  JvHotKeyLauncher.HotKey := TextToShortCut(settings.LauncherHotkey);
+  chkWinKeyLauncher.Checked := settings.RequireWinKeyLauncher;
   cbbPosition.ItemIndex := settings.BarPosition;
   if settings.Proxy = '' then
   begin
@@ -378,8 +415,12 @@ end;
 procedure TfrmSetting.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   JvGlobalHotKey.HotKey := fTempHotkey;
+  JvHotKeyTask.HotKey := fTempHotkey2;
+  JvHotKeyLauncher.HotKey:= fTempHotkey3;
 
   frmMenu.JvApplicationHotKey1.Active := True;
+  frmMenu.JvApplicationHotKey2.Active := True;
+  frmMenu.JvApplicationHotKey3.Active := True;
 end;
 
 procedure TfrmSetting.FormCreate(Sender: TObject);
@@ -491,6 +532,12 @@ procedure TfrmSetting.FormShow(Sender: TObject);
 begin
   fTempHotkey := JvGlobalHotKey.HotKey;
   frmMenu.JvApplicationHotKey1.Active := False;
+
+  fTempHotkey2 := JvHotKeyTask.HotKey;
+  frmMenu.JvApplicationHotKey2.Active := False;
+
+  fTempHotkey3 := JvHotKeyLauncher.HotKey;
+  frmMenu.JvApplicationHotKey3.Active := False;
 end;
 
 procedure TfrmSetting.Frame11btnCancelClick(Sender: TObject);
@@ -546,6 +593,16 @@ end;
 procedure TfrmSetting.JvGlobalHotKeyChange(Sender: TObject);
 begin
   frmMenu.Settings.GlobalHotkey := ShortCutToText(JvGlobalHotKey.HotKey);
+end;
+
+procedure TfrmSetting.JvHotKeyLauncherChange(Sender: TObject);
+begin
+  frmMenu.Settings.LauncherHotkey := ShortCutToText(JvHotKeyLauncher.HotKey);
+end;
+
+procedure TfrmSetting.JvHotKeyTaskChange(Sender: TObject);
+begin
+  frmMenu.Settings.TaskHotkey := ShortCutToText(JvHotKeyTask.HotKey);
 end;
 
 procedure TfrmSetting.lblAppWebSiteClick(Sender: TObject);
