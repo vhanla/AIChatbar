@@ -1131,27 +1131,6 @@ begin
         else
           FocusCurrentBrowser;
       end;
-    end
-    else
-    if Assigned(formLauncher) then
-    begin
-      if formLauncher.Visible then
-      begin
-        if GetForegroundWindow <> formLauncher.Handle then
-        begin
-          SetForegroundWindow(formLauncher.Handle);
-        end
-        else
-          formLauncher.Hide;
-      end
-      else
-      begin
-        formLauncher.Show;
-        if GetForegroundWindow <> formLauncher.Handle then
-        begin
-          SetForegroundWindow(formLauncher.Handle);
-        end;
-      end;
     end;
   end;
 end;
