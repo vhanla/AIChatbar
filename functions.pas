@@ -372,7 +372,7 @@ var
   DWResult: DWord;
 begin
   lngReturnValue := SendMessageTimeout(app, WM_NULL, 0, 0, SMTO_ABORTIFHUNG and
-    SMTO_BLOCK, 1000, DWResult);
+    SMTO_BLOCK, 1000, @DWResult);
   if lngReturnValue > 0 then
     Result := True
   else
