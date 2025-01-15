@@ -25,8 +25,6 @@ object ChildForm: TChildForm
     Color = clNone
     TabOrder = 0
     Browser = WVBrowser1
-    ExplicitWidth = 618
-    ExplicitHeight = 413
   end
   object StatusBar1: TStatusBar
     Left = 0
@@ -39,8 +37,6 @@ object ChildForm: TChildForm
         Width = 50
       end>
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 413
-    ExplicitWidth = 618
   end
   object WVBrowser1: TWVBrowser
     TargetCompatibleBrowserVersion = '95.0.1020.44'
