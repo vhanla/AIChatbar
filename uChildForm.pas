@@ -31,9 +31,11 @@ type
   private
     FArgs     : TCoreWebView2NewWindowRequestedEventArgs;
     FDeferral : TCoreWebView2Deferral;
+    FURL      : string;
 
   public
-    constructor Create(AOwner: TComponent; const aArgs : ICoreWebView2NewWindowRequestedEventArgs); reintroduce;
+    constructor Create(AOwner: TComponent; const aArgs : ICoreWebView2NewWindowRequestedEventArgs); reintroduce; overload;
+    constructor Create(AOwner: TComponent; const aURL: string); reintroduce; overload;
   end;
 
 var
@@ -52,6 +54,15 @@ begin
 
   FArgs     := TCoreWebView2NewWindowRequestedEventArgs.Create(aArgs);
   FDeferral := TCoreWebView2Deferral.Create(FArgs.Deferral);
+end;
+
+constructor TChildForm.Create(AOwner: TComponent; const aURL: string);
+begin
+  inherited Create(AOwner);
+
+  FArgs     := nil; // No event args in this constructor
+  FDeferral := nil;
+  FURL      := aURL;
 end;
 
 procedure TChildForm.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -135,6 +146,8 @@ begin
     end;
 
   WVWindowParent1.UpdateSize;
+  if FURL <> '' then
+  WVBrowser1.Navigate(FURL);
 end;
 
 procedure TChildForm.WVBrowser1DocumentTitleChanged(Sender: TObject);
