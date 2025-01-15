@@ -46,6 +46,7 @@ type
     JvApplicationHotKey2: TJvApplicationHotKey;
     ActionList1: TActionList;
     actSwitchAIChats: TAction;
+    JvApplicationHotKey3: TJvApplicationHotKey;
 
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -78,6 +79,9 @@ type
       var HotKey: TShortCut);
     procedure JvApplicationHotKey2HotKey(Sender: TObject);
     procedure actSwitchAIChatsExecute(Sender: TObject);
+    procedure JvApplicationHotKey3HotKeyRegisterFailed(Sender: TObject;
+      var HotKey: TShortCut);
+    procedure JvApplicationHotKey3HotKey(Sender: TObject);
 //    procedure FormPaint(Sender: TObject);
   private
     { Private declarations }
@@ -133,6 +137,8 @@ type
     procedure SetDarkMode(Enable: Boolean = True);
     procedure LoadSites;
 
+    procedure OnAppLostFocus(Sender: TObject);
+
     procedure HotSpotAction(MousePos: TPoint);
     property OnMenuArea: Boolean read FOnMenuArea write FOnMenuArea;
   end;
@@ -157,7 +163,7 @@ uses
   uBrowserCard,
   ActiveX,
   Vcl.Themes,
-  GDIPAPI, gdipobj, gdiputil, frmTaskGPT;
+  GDIPAPI, gdipobj, gdiputil, frmTaskGPT, frmLauncher;
 
 const
 //https://stackoverflow.com/a/22105803/537347 Windows 8 or newer only
@@ -844,6 +850,11 @@ begin
   JvApplicationHotKey2.WindowsKey := True;
   JvApplicationHotKey2.Active := True;
 
+  // FMX Launcher | Ctrl+Space hard code for now
+  //JvApplicationHotKey3.HotKey := TextToShortCut('Space');
+  JvApplicationHotKey3.WindowsKey := False;
+  JvApplicationHotKey3.Active := True;
+
   // Virtual Desktop Aware (Win10/11)
   if TOSVersion.Build >= 22000 then
     DesktopManagerW11.OnCurrentDesktopChanged := CurrentDesktopChangedW11
@@ -851,6 +862,10 @@ begin
     DesktopManager.OnCurrentDesktopChanged := CurrentDesktopChanged;
 
   RegisterRawInput;
+
+  AllowSetForegroundWindow(GetCurrentProcessId);
+
+  Application.OnDeactivate := OnAppLostFocus;
 end;
 
 procedure TfrmMenu.FormDestroy(Sender: TObject);
@@ -1093,26 +1108,50 @@ procedure TfrmMenu.JvApplicationHotKey1HotKey(Sender: TObject);
 begin
   if Assigned(mainBrowser) then
   begin
-    if mainBrowser.Visible then
+    if (mainBrowser.CardPanel1.CardCount > 0) then
     begin
-      if GetForegroundWindow <> mainBrowser.Handle then
+      if mainBrowser.Visible then
       begin
-        SetForegroundWindow(mainBrowser.Handle);
-        FocusCurrentBrowser;
+        if GetForegroundWindow <> mainBrowser.Handle then
+        begin
+          SetForegroundWindow(mainBrowser.Handle);
+          FocusCurrentBrowser;
+        end
+        else
+          mainBrowser.Hide;
       end
       else
-        mainBrowser.Hide;
+      begin
+        mainBrowser.Show;
+        if GetForegroundWindow <> mainBrowser.Handle then
+        begin
+          SetForegroundWindow(mainBrowser.Handle);
+          FocusCurrentBrowser;
+        end
+        else
+          FocusCurrentBrowser;
+      end;
     end
     else
+    if Assigned(formLauncher) then
     begin
-      mainBrowser.Show;
-      if GetForegroundWindow <> mainBrowser.Handle then
+      if formLauncher.Visible then
       begin
-        SetForegroundWindow(mainBrowser.Handle);
-        FocusCurrentBrowser;
+        if GetForegroundWindow <> formLauncher.Handle then
+        begin
+          SetForegroundWindow(formLauncher.Handle);
+        end
+        else
+          formLauncher.Hide;
       end
       else
-        FocusCurrentBrowser;
+      begin
+        formLauncher.Show;
+        if GetForegroundWindow <> formLauncher.Handle then
+        begin
+          SetForegroundWindow(formLauncher.Handle);
+        end;
+      end;
     end;
   end;
 end;
@@ -1130,13 +1169,63 @@ end;
 
 procedure TfrmMenu.JvApplicationHotKey2HotKey(Sender: TObject);
 begin
-  taskForm.Visible := not taskForm.Visible;
+  if Assigned(taskForm) then
+  begin
+    if taskForm.Visible then
+    begin
+      if GetForegroundWindow <> taskForm.Handle then
+      begin
+        SetForegroundWindow(taskForm.Handle);
+      end
+      else
+        taskForm.Hide;
+    end
+    else
+    begin
+      taskForm.Show;
+      if GetForegroundWindow <> taskForm.Handle then
+      begin
+        SetForegroundWindow(taskForm.Handle);
+      end;
+    end;
+  end;
 end;
 
 procedure TfrmMenu.JvApplicationHotKey2HotKeyRegisterFailed(Sender: TObject;
   var HotKey: TShortCut);
 begin
   ShowMessage('There was an error assigning Win+F11 for TaskGPT');
+end;
+
+procedure TfrmMenu.JvApplicationHotKey3HotKey(Sender: TObject);
+begin
+//  frmLauncher.Form1.Visible := not frmLauncher.Form1.Visible;
+  if Assigned(formLauncher) then
+    begin
+      if formLauncher.Visible then
+      begin
+        if GetForegroundWindow <> formLauncher.Handle then
+        begin
+          SetForegroundWindow(formLauncher.Handle);
+        end
+        else
+          formLauncher.Hide;
+      end
+      else
+      begin
+        formLauncher.Show;
+        if GetForegroundWindow <> formLauncher.Handle then
+        begin
+          SetForegroundWindow(formLauncher.Handle);
+        end;
+      end;
+  end;
+end;
+
+procedure TfrmMenu.JvApplicationHotKey3HotKeyRegisterFailed(Sender: TObject;
+  var HotKey: TShortCut);
+begin
+  ShowMessage('There was an error assigning Ctrl+Space for Launcher');
 end;
 
 procedure TfrmMenu.LoadSites;
@@ -1192,6 +1281,14 @@ begin
     vicon.OnMouseEnter := IconMouseHover;
     Icons.Add(vicon);
   end;
+end;
+
+procedure TfrmMenu.OnAppLostFocus(Sender: TObject);
+begin
+  if formLauncher.Visible then
+    formLauncher.Hide;
+  if taskForm.Visible then
+    taskForm.Hide;
 end;
 
 procedure TfrmMenu.pm1Close(Sender: TObject);
