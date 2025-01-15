@@ -7,7 +7,7 @@ uses
   Dialogs, StdCtrls, jpeg, ExtCtrls, ComCtrls, ImgList, registry, Spin,
   System.ImageList, Vcl.ControlList, Vcl.VirtualImage, Vcl.BaseImageCollection,
   SVGIconImageCollection, Vcl.ToolWin, IconFontsImageListBase,
-  IconFontsImageList, Skia, Skia.Vcl, Vcl.Mask, frameEditSite, JvExComCtrls,
+  IconFontsImageList, Skia, Vcl.Mask, frameEditSite, JvExComCtrls,
   JvHotKey, settingsHelper, Vcl.Menus;
 
 type
