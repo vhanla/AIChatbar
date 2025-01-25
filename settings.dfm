@@ -187,7 +187,7 @@ object frmSetting: TfrmSetting
           Left = 5
           Top = 5
           Width = 78
-          Height = 78
+          Height = -10
           Margins.Left = 5
           Margins.Top = 5
           Margins.Right = 5
@@ -219,26 +219,28 @@ object frmSetting: TfrmSetting
         end
         object ControlListButton1: TControlListButton
           AlignWithMargins = True
-          Left = 545
+          Left = -84
           Top = 25
           Width = 38
-          Height = 38
+          Height = -50
           Margins.Top = 25
           Margins.Bottom = 25
           Align = alRight
           Style = clbkToolButton
+          ExplicitLeft = 545
           ExplicitHeight = 8
         end
         object ControlListButton2: TControlListButton
           AlignWithMargins = True
-          Left = 589
+          Left = -40
           Top = 25
           Width = 37
-          Height = 38
+          Height = -50
           Margins.Top = 25
           Margins.Bottom = 25
           Align = alRight
           Style = clbkToolButton
+          ExplicitLeft = 589
           ExplicitHeight = 8
         end
       end
@@ -2855,7 +2857,7 @@ object frmSetting: TfrmSetting
         Width = 437
         Height = 182
         Caption = 
-          'AI Chatbar for Windows 10/11 v1.1.0. '#13#10' Description: Tool to int' +
+          'AI Chatbar for Windows 10/11 v1.2.0. '#13#10' Description: Tool to int' +
           'eract withAI chat bots.'#13#10' Author: Victor Alberto Gil  <vhanla> h' +
           'ttps://codigobit.net'#13#10#13#10' Copyright Codigobit - All rights reserv' +
           'ed.'#13#10#13#10'Part of the content included comes from:'#13#10' '#13#10#13#10#13#10'DISCLAIM' +
