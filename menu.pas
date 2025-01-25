@@ -47,6 +47,7 @@ type
     ActionList1: TActionList;
     actSwitchAIChats: TAction;
     JvApplicationHotKey3: TJvApplicationHotKey;
+    tmrDelayAction: TTimer;
 
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -82,6 +83,7 @@ type
     procedure JvApplicationHotKey3HotKeyRegisterFailed(Sender: TObject;
       var HotKey: TShortCut);
     procedure JvApplicationHotKey3HotKey(Sender: TObject);
+    procedure tmrDelayActionTimer(Sender: TObject);
 //    procedure FormPaint(Sender: TObject);
   private
     { Private declarations }
@@ -93,6 +95,15 @@ type
     {$IFEND}
     FHookWndHandle: THandle;
     FHookMsg: Integer;
+
+    { Mouse gestures }
+    FHotSpotEntered: Boolean;
+    FFirstKnockTime: TDateTime;
+    FKnockEnabled: Boolean;
+    FDelayEnabled: Boolean;
+    FActionPending: Boolean; // Prevent overlapping actions
+    FMousePosition: TPoint;
+    const KnockInteval = 0.5 / (24 * 60 * 60); //  500 milliseconds as TDateTime
 
     procedure CreateParams(var Params: TCreateParams); override;
     procedure HideMenu(Sender: TObject);
@@ -139,8 +150,13 @@ type
 
     procedure OnAppLostFocus(Sender: TObject);
 
+    { Tightly coupled procedures for mouse actions }
     procedure HotSpotAction(MousePos: TPoint);
+    function IsInHotSpot(const MPos: TPoint): Boolean;
+    procedure StartDelayedAction;
     property OnMenuArea: Boolean read FOnMenuArea write FOnMenuArea;
+    property MouseDelay: Boolean read FDelayEnabled write FDelayEnabled;
+    property MouseGesture: Boolean read FKnockEnabled write FKnockEnabled;
   end;
 
 var
@@ -391,6 +407,19 @@ begin
   end;
 end;
 
+procedure TfrmMenu.StartDelayedAction;
+begin
+  if not FDelayEnabled then
+    HotSpotAction(FMousePosition)
+  else
+  if not FActionPending then
+  begin
+    FActionPending := True;
+    tmrDelayAction.Interval := Settings.MouseDelayValue;
+    tmrDelayAction.Enabled := True;
+  end;
+end;
+
 procedure TfrmMenu.WMDisplayChange(var message: TMessage);
 begin
   // Resolution changed
@@ -497,8 +526,8 @@ begin
 end;
 
 procedure TfrmMenu.HotSpotAction(MousePos: TPoint);
-var
-  TypesAniPlugin: TAQPSystemTypesAnimations;
+//var
+//  TypesAniPlugin: TAQPSystemTypesAnimations;
 begin
   if Settings.DisableOnFullScreenDirectX and DetectFullScreen3D then Exit;
   if Settings.DisableOnFullScreen and DetectFullScreenApp(GetForegroundWindow) then Exit;
@@ -520,18 +549,7 @@ begin
             NewAlphaBlend := MAXBYTE;
             ShowMenuAnimation(ABE_LEFT);
           end;
-        end
-        else if (MousePos.X > frmMenu.Left + frmMenu.Width) and (tmrHideMenu.Enabled = False) then
-        begin
-          if OnMenuArea then
-          begin
-            OnMenuArea := False;
-            NewWidth := 1;
-            NewLeft := GetLeftMost;
-            NewAlphaBlend := 0;
-            ShowMenuAnimation(ABE_LEFT, False);
-          end;
-        end;
+        end; // moved hide to rawinput
 
       end;
       ABE_TOP:
@@ -551,18 +569,7 @@ begin
             NewAlphaBlend := MAXBYTE;
             ShowMenuAnimation(ABE_RIGHT);
           end;
-        end
-        else if (MousePos.X < Left) and (tmrHideMenu.Enabled = False) then
-        begin
-          if OnMenuArea then
-          begin
-            OnMenuArea := False;
-            NewWidth := 1;
-            NewLeft := Screen.WorkAreaWidth - NewWidth;
-            NewAlphaBlend := 0;
-            ShowMenuAnimation(ABE_RIGHT, False);
-          end;
-        end;
+        end; // moved hide to rawinput
 
       end;
       ABE_BOTTOM:
@@ -866,6 +873,10 @@ begin
   AllowSetForegroundWindow(GetCurrentProcessId);
 
   Application.OnDeactivate := OnAppLostFocus;
+
+  { Mouse behavior }
+  FDelayEnabled := Settings.MouseDelay;
+  FKnockEnabled := Settings.MouseGesture;
 end;
 
 procedure TfrmMenu.FormDestroy(Sender: TObject);
@@ -1017,6 +1028,13 @@ begin
 
 end;
 
+procedure TfrmMenu.tmrDelayActionTimer(Sender: TObject);
+begin
+  tmrDelayAction.Enabled := False;
+  FActionPending := False;
+  HotSpotAction(FMousePosition);
+end;
+
 procedure TfrmMenu.tmrHideMenuTimer(Sender: TObject);
 begin
   if not tmrShowMenu.Enabled then
@@ -1076,6 +1094,19 @@ end;
 procedure TfrmMenu.FormShow(Sender: TObject);
 begin
   ShowWindow(Application.Handle, SW_HIDE);
+end;
+
+function TfrmMenu.IsInHotSpot(const MPos: TPoint): Boolean;
+begin
+  if (GetAsyncKeyState(VK_LBUTTON) = 0) and (GetAsyncKeyState(VK_RBUTTON) = 0) then
+  begin
+    case Settings.BarPosition of
+      ABE_LEFT: Result := (MPos.X <= GetLeftMost + 1);
+      ABE_TOP:;
+      ABE_RIGHT: Result := (MPos.X >= GetRightMost - 1);
+      ABE_BOTTOM:;
+    end;
+  end;
 end;
 
 function TfrmMenu.IsStarteMenuVisible: Boolean;
@@ -1353,8 +1384,8 @@ var
   Mouse: RAWMOUSE;
 
   Cur: THandle;
-  MPos: TPoint;
 
+  NowTime: TDateTime;
 begin
   if GetRawInputData(HRAWINPUT(Message.lParam), RID_INPUT, nil, DataSize, SizeOf(Header)) = 0 then
   begin
@@ -1369,8 +1400,8 @@ begin
 
           Cur := 0;
           try
-            if not Windows.GetCursorPos(MPos) then
-              MPos := Point(120, 120);
+            if not Windows.GetCursorPos(FMousePosition) then
+              FMousePosition := Point(120, 120);
             Cur := GetForegroundWindow; // it will likely fail on windows locked (Win+L)
           except
             Cur := 0;
@@ -1378,11 +1409,91 @@ begin
 
           if Cur <> 0 then
           begin
-            HotSpotAction(MPos);
+            NowTime := Now();
+
+            if IsInHotSpot(FMousePosition) then
+            begin
+              if not FHotSpotEntered and not FActionPending then
+              begin
+                // First entry into hot spot
+                FHotSpotEntered := True;
+
+                if FKnockEnabled then
+                begin
+                  if FFirstKnockTime = 0 then
+                  begin
+                    FFirstKnockTime := NowTime; // First knock time
+                  end
+                  else if NowTime - FFirstKnockTime <= KnockInteval then
+                  begin
+                    // Second knock within the interval
+                    FFirstKnockTime := 0; // Reset knock time
+                    StartDelayedAction;
+                  end
+                  else
+                  begin
+                    // Too late, reset knock
+                    FFirstKnockTime := NowTime;
+                  end;
+                end
+                else
+                begin
+                  // No knock-knock, just start delay
+                  StartDelayedAction;
+                end;
+              end;
+            end
+            else
+            begin
+              // Mouse left the hot spot
+              FHotSpotEntered := False;
+              // Hide if visible menu
+              case Settings.BarPosition of
+              ABE_LEFT:
+              begin
+                if (FMousePosition.X > frmMenu.Left + frmMenu.Width) and (tmrHideMenu.Enabled = False) then
+                begin
+                  if OnMenuArea then
+                  begin
+                    OnMenuArea := False;
+                    NewWidth := 1;
+                    NewLeft := GetLeftMost;
+                    NewAlphaBlend := 0;
+                    ShowMenuAnimation(ABE_LEFT, False);
+                  end;
+                end;
+              end;
+              ABE_TOP:
+              begin
+
+              end;
+              ABE_RIGHT:
+              begin
+                if (FMousePosition.X < Left) and (tmrHideMenu.Enabled = False) then
+                begin
+                  if OnMenuArea then
+                  begin
+                    OnMenuArea := False;
+                    NewWidth := 1;
+                    NewLeft := Screen.WorkAreaWidth - NewWidth;
+                    NewAlphaBlend := 0;
+                    ShowMenuAnimation(ABE_RIGHT, False);
+                  end;
+                end;
+
+              end;
+              ABE_BOTTOM:
+              begin
+
+              end;
+            end;
+
+            end;
+
+
+//            HotSpotAction(MPos);
           end;
-
         end;
-
       end;
     finally
       FreeMem(lRawInput);

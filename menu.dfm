@@ -257,4 +257,10 @@ object frmMenu: TfrmMenu
     Left = 384
     Top = 152
   end
+  object tmrDelayAction: TTimer
+    Enabled = False
+    OnTimer = tmrDelayActionTimer
+    Left = 648
+    Top = 368
+  end
 end

@@ -64,6 +64,9 @@ type
     FProxy: string;
     FBarPosition: Integer; //ABE_RIGHT
     FDarkMode: Boolean;
+    FMouseDelay: Boolean;
+    FMouseDelayValue: Integer; // milliseconds
+    FMouseGesture: Boolean; //a.k.a. knock-knock gesture
 
   public
     procedure CreateTables;
@@ -98,6 +101,9 @@ type
     property Proxy: string read FProxy write FProxy;
     property BarPosition: Integer read FBarPosition write FBarPosition;
     property DarkMode: Boolean read FDarkMode write FDarkMode;
+    property MouseDelay: Boolean read FMouseDelay write FMouseDelay;
+    property MouseDelayValue: Integer read FMouseDelayValue write FMouseDelayValue;
+    property MouseGesture: Boolean read FMouseGesture write FMouseGesture;
   end;
 
 implementation
@@ -232,6 +238,9 @@ begin
     FProxy := ini.ReadString('settings', 'proxy', 'localhost:8080');
     FBarPosition := ini.ReadInteger('settings', 'position', ABE_RIGHT);
     FDarkMode := ini.ReadBool('settings', 'darkmode', True);
+    FMouseDelay := ini.ReadBool('settings', 'mousedelay', False);
+    FMouseDelayValue := ini.ReadInteger('settings', 'mousedelayvalue', 250);
+    FMouseGesture := ini.ReadBool('settings', 'mousegesture', False);
   finally
     ini.Free;
   end;
@@ -299,6 +308,9 @@ begin
     ini.WriteString('settings', 'proxy', FProxy);
     ini.WriteInteger('settings', 'position', FBarPosition);
     ini.WriteBool('settings', 'darkmode', FDarkMode);
+    ini.WriteBool('settings', 'mousedelay', FMouseDelay);
+    ini.WriteInteger('settings', 'mousedelayvalue', FMouseDelayValue);
+    ini.WriteBool('settings', 'mousegesture', FMouseGesture);
   finally
     ini.Free;
   end;

@@ -129,7 +129,7 @@ object frmSetting: TfrmSetting
     Top = 62
     Width = 641
     Height = 363
-    ActivePage = TabSheet2
+    ActivePage = TabSheet5
     Anchors = [akLeft, akTop, akRight, akBottom]
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -332,7 +332,7 @@ object frmSetting: TfrmSetting
         Left = 308
         Top = 3
         Width = 322
-        Height = 235
+        Height = 196
         Caption = 'Browser'
         TabOrder = 5
         object chkUseEmbeddedBrowser: TRadioButton
@@ -518,6 +518,51 @@ object frmSetting: TfrmSetting
           ParentColor = False
           TabOrder = 1
           OnClick = chkWinKeyLauncherClick
+        end
+      end
+      object GroupBox4: TGroupBox
+        Left = 308
+        Top = 205
+        Width = 322
+        Height = 100
+        Caption = 'Mouse'
+        Color = 2743985
+        ParentBackground = False
+        ParentColor = False
+        TabOrder = 10
+        object lbedMouseDelay: TLabeledEdit
+          Left = 30
+          Top = 48
+          Width = 73
+          Height = 21
+          EditLabel.Width = 210
+          EditLabel.Height = 13
+          EditLabel.Caption = 'Milliseconds to wait (1000ms = 1 second)'
+          NumbersOnly = True
+          TabOrder = 0
+          Text = '250'
+        end
+        object chkMouseDelay: TCheckBox
+          Left = 11
+          Top = 16
+          Width = 129
+          Height = 17
+          Caption = 'Delay to show menu'
+          TabOrder = 1
+          OnClick = chkMouseDelayClick
+        end
+        object chkKnockKnock: TCheckBox
+          Left = 11
+          Top = 74
+          Width = 254
+          Height = 17
+          Hint = 
+            'Mouse gesture: move twice to the menu'#39's screen edge as double cl' +
+            'ick like to show the menu.'
+          Caption = 'Knock-knock gesture to show menu'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 2
         end
       end
     end

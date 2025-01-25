@@ -69,6 +69,10 @@ type
     GroupBox3: TGroupBox;
     JvHotKeyLauncher: TJvHotKey;
     chkWinKeyLauncher: TCheckBox;
+    GroupBox4: TGroupBox;
+    lbedMouseDelay: TLabeledEdit;
+    chkMouseDelay: TCheckBox;
+    chkKnockKnock: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -107,6 +111,7 @@ type
     procedure JvHotKeyLauncherChange(Sender: TObject);
     procedure chkWinKeyTaskClick(Sender: TObject);
     procedure chkWinKeyLauncherClick(Sender: TObject);
+    procedure chkMouseDelayClick(Sender: TObject);
   private
     { Private declarations }
     fTempHotkey: TShortcut;
@@ -308,6 +313,12 @@ begin
   frmMenu.JvApplicationHotKey3.HotKey := JvHotKeyLauncher.HotKey;
   frmMenu.JvApplicationHotKey3.Active := True;
 
+  frmMenu.Settings.MouseDelay := chkMouseDelay.Checked;
+  frmMenu.MouseDelay := chkMouseDelay.Checked;
+  frmMenu.Settings.MouseDelayValue := StrToInt(lbedMouseDelay.Text);
+  frmMenu.Settings.MouseGesture := chkKnockKnock.Checked;
+  frmMenu.MouseGesture := chkKnockKnock.Checked;
+
   frmMenu.Settings.SaveSettings;
   Close;
 end;
@@ -359,6 +370,11 @@ end;
 procedure TfrmSetting.chkFSOffClick(Sender: TObject);
 begin
   frmMenu.Settings.DisableOnFullScreen := chkFSOff.Checked;
+end;
+
+procedure TfrmSetting.chkMouseDelayClick(Sender: TObject);
+begin
+  lbedMouseDelay.Enabled := chkMouseDelay.Checked;
 end;
 
 procedure TfrmSetting.chkProxyClick(Sender: TObject);
@@ -538,6 +554,10 @@ begin
 
   fTempHotkey3 := JvHotKeyLauncher.HotKey;
   frmMenu.JvApplicationHotKey3.Active := False;
+
+  chkMouseDelay.Checked := frmMenu.Settings.MouseDelay;
+  lbedMouseDelay.Text := frmMenu.Settings.MouseDelayValue.ToString;
+  chkKnockKnock.Checked := frmMenu.Settings.MouseGesture;
 end;
 
 procedure TfrmSetting.Frame11btnCancelClick(Sender: TObject);
