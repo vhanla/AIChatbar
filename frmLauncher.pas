@@ -53,11 +53,14 @@ type
     chkDefaultBrowser: TCheckBox;
     JvStatusBar1: TJvStatusBar;
     Panel1: TPanel;
+    actSearchPicker: TAction;
     procedure FormCreate(Sender: TObject);
     procedure actHideLauncherExecute(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormResize(Sender: TObject);
+    procedure actSearchPickerExecute(Sender: TObject);
+    procedure ACLImageComboBox1Change(Sender: TObject);
   private
     { Private declarations }
     SearchEdit1: TSearchSynEdit;
@@ -150,10 +153,23 @@ begin
   end;
 end;
 
+procedure TformLauncher.ACLImageComboBox1Change(Sender: TObject);
+begin
+  if Assigned(SearchEdit1) then
+    SearchEdit1.SetFocus;
+end;
+
 procedure TformLauncher.actHideLauncherExecute(Sender: TObject);
 begin
 
   Hide;
+end;
+
+procedure TformLauncher.actSearchPickerExecute(Sender: TObject);
+begin
+  ACLImageComboBox1.SetFocus;
+  SendMessage(ACLImageComboBox1.Handle, WM_KEYDOWN, VK_F4, 0);
+  SendMessage(ACLImageComboBox1.Handle, WM_KEYUP, VK_F4, 0);
 end;
 
 procedure TformLauncher.CreateParams(var Params: TCreateParams);
@@ -212,32 +228,52 @@ var
   TempChildForm : TChildForm;
   queryStr: string;
   formattedText: string;
+  navigateToURL: Boolean;
 begin
-  formattedText := PassMultilineTextToURLParam(SearchEdit1.Text);
-  case ACLImageComboBox1.SelectedItem.Tag of
-    0:
-    begin
-      queryStr := 'https://chatgpt.com/?q='+formattedText+'&ref=ext&model=auto';
-    end;
-    1:
-    begin
-      queryStr := 'https://chatgpt.com/?q='+formattedText+'&ref=ext&model=auto&temporary-chat=true';
-    end;
-    2:
-    begin
-      queryStr := 'https://claude.ai/new?q='+formattedText;
-    end;
-    3:
-    begin
-      queryStr := 'https://www.perplexity.ai/search?q='+formattedText;
-    end;
-    4:
-    begin
-      queryStr := 'https://huggingface.co/chat?q='+formattedText;
-    end;
-    5:
-    begin
-      queryStr := 'https://you.com/search?q='+formattedText+'&fromSearchBar=true&tbm=youchat';
+  if SearchEdit1.Lines.Count = 1 then
+  begin
+    if (Pos('http://',SearchEdit1.Text) = 1) or
+       (Pos('https://', SearchEdit1.Text) = 1) then
+       begin
+        navigateToURL := True;
+        queryStr := SearchEdit1.Text
+       end
+    else
+      navigateToURL := False;
+  end;
+
+  if not navigateToURL then
+  begin
+    formattedText := PassMultilineTextToURLParam(SearchEdit1.Text);
+    case ACLImageComboBox1.SelectedItem.Tag of
+      0:
+      begin
+        queryStr := 'https://chatgpt.com/?q='+formattedText+'&ref=ext&model=auto';
+      end;
+      1:
+      begin
+        queryStr := 'https://chatgpt.com/?q='+formattedText+'&ref=ext&model=auto&temporary-chat=true';
+      end;
+      2:
+      begin
+        queryStr := 'https://claude.ai/new?q='+formattedText;
+      end;
+      3:
+      begin
+        queryStr := 'https://www.perplexity.ai/search?q='+formattedText;
+      end;
+      4:
+      begin
+        queryStr := 'https://huggingface.co/chat?q='+formattedText;
+      end;
+      5:
+      begin
+        queryStr := 'https://you.com/search?q='+formattedText+'&fromSearchBar=true&tbm=youchat';
+      end;
+      6:
+      begin
+        queryStr := 'https://search.brave.com/search?q='+formattedText;
+      end;
     end;
   end;
 //  if Assigned(mainBrowser) and (mainBrowser.CardPanel1.CardCount > 0) then
