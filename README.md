@@ -16,7 +16,8 @@ Features:
 - [x] Show/hide sidebar on mouse move to the side area of your monitor 
 - [x] ChatGPT
 - [x] Bing Chat
-- [x] Bard (it has Microphone and TTS included)
+- [x] Copilot PWA
+- [x] Gemini (it has Microphone and TTS included)
 - [x] You Chat
 - [x] Perplexity Labs (LLaMA)
 - [x] Hugging Chat
@@ -25,7 +26,10 @@ Features:
 - [x] BratGPT 🤖
 - [x] ChatPDF
 - [x] Adobe Firefly
-- [x] Vectorizer
+- [x] DeepSeek
+- [x] v0dev
+- [x] Meta AI
+- [x] QwenLM AI
 
 ![imagen](https://github.com/vhanla/AIChatbar/assets/1015823/09018c19-a8d3-4595-b58d-edb45a7e4e07)
 
@@ -36,7 +40,25 @@ Add as many AI sites your main monitor screen height allows to show.
 Move and/or resize the AI Chat window, it also shows the current RAM usage by all the sites.
 ![imagen](https://github.com/vhanla/AIChatbar/assets/1015823/d044b21a-5521-420e-9598-eb6e153270e0)
 
+Fast launcher (custom hotkey) to **query AI services** (you can use your default web browser)
+![imagen](https://github.com/user-attachments/assets/4cd92cdc-af37-4f2d-bc76-7e651bbab7c6)
+The following direct query AI services are available:
+- [x] ChatGPT
+- [x] ChatGPT (no history)
+- [x] Claude AI
+- [x] Perplexity
+- [x] Hugging Chat
+- [x] YouChat
+- [x] Brave Search (bonus as this has AI search results)
 
+How does it work?
+It just redirects your queries to those AI chat services passing your queries. 
+
+How to use:
+- Set up a custom Global Hot Key
+- Invoke it, write your questions
+- Alt+Space is a local shortcut to select one of those services (hit enter)
+- Ctrl+Enter to search in the selected AI chat service.
 
 Video demonstration:
 
